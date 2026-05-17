@@ -1,0 +1,8 @@
+# image datasets
+data/
+dataset/
+images/
+raw_dataset/
+*.jpg
+*.png
+*.jpeg
