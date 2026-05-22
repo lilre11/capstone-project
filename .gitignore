@@ -14,9 +14,14 @@ __pycache__/
 venv/
 env/
 .pytest_cache/
+.env
+.env.*
 
 # Jupyter
 .ipynb_checkpoints/
 
 # Model artifacts (untracked by default; model in repo is intentionally committed)
 models/onnx/*.onnx
+
+superpowers/
+docs/
