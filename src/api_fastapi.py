@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile, Query
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from PIL import Image
 
@@ -219,6 +220,22 @@ def _extract_best_class(predictions: np.ndarray, num_classes: int) -> Tuple[int,
 def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        # ── Initialise database ──
+        from src.database.database import init_db, get_db
+        from src.database.seed import seed_database
+
+        init_db()
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
+            seed_database(db)
+        finally:
+            try:
+                next(db_gen)
+            except StopIteration:
+                pass
+
+        # ── Load CV model ──
         class_names = _resolve_class_names()
         app.state.class_names = class_names
 
@@ -240,10 +257,30 @@ def create_app() -> FastAPI:
             app.state.input_size = None
 
     app = FastAPI(
-        title="AI Smartphone Decision Support System - CV Layer",
+        title="AI Smartphone Decision Support System",
+        description="CV detection, AHP weighting, TOPSIS ranking, and LLM explanation.",
         lifespan=lifespan,
     )
 
+    # ── CORS middleware ──
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # ── Mount decision-support API routes ──
+    from src.api.routes import router as api_router
+    app.include_router(api_router)
+
+    # ── CV identification endpoint (existing) ──
     @app.post("/identify")
     async def identify_device(
         file: UploadFile = File(...),

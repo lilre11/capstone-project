@@ -1,0 +1,15 @@
+{
+  "name": "capstone-decision-support-system",
+  "version": "1.0.0",
+  "description": "AI-Powered Smartphone Decision Support System",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": ".venv\\Scripts\\python.exe -m uvicorn src.api_fastapi:app --reload --host 127.0.0.1 --port 8000",
+    "dev": "npx --yes concurrently --kill-others \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "install:all": "npm install --prefix frontend && .venv\\Scripts\\python.exe -m pip install -r requirements.txt",
+    "test": ".venv\\Scripts\\pytest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
