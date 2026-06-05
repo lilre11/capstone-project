@@ -24,4 +24,4 @@ env/
 models/onnx/*.onnx
 
 superpowers/
-docs/
+docs/superpowers/specs/
