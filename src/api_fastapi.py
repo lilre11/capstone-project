@@ -37,6 +37,11 @@ DEFAULT_CLASS_NAMES = [
 DEFAULT_BACKEND = "roboflow"
 DEFAULT_ROBOFLOW_API_URL = "https://serverless.roboflow.com"
 DEFAULT_ROBOFLOW_MODEL_ID = "smartphones_capstone/4"
+DEFAULT_ONNX_MODEL_KEY = "model1"
+ONNX_MODEL_PATHS = {
+    "model1": "computer_vision/models/onnx/model_1.onnx",
+    "model2": "computer_vision/models/onnx/model_2.onnx",
+}
 
 logger = logging.getLogger(__name__)
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
@@ -52,6 +57,13 @@ def _resolve_class_names() -> List[str]:
 
 def _resolve_model_path() -> str:
     return os.getenv("MODEL_PATH", DEFAULT_MODEL_PATH)
+
+
+def _resolve_onnx_model_path(model_key: str | None) -> str:
+    key = (model_key or DEFAULT_ONNX_MODEL_KEY).strip().lower()
+    if key not in ONNX_MODEL_PATHS:
+        raise HTTPException(status_code=400, detail="Invalid model specified.")
+    return ONNX_MODEL_PATHS[key]
 
 
 def _resolve_default_backend() -> str:
@@ -118,29 +130,34 @@ def _infer_hw_from_model(model: ONNXModel) -> Tuple[int, int]:
     return 224, 224
 
 
-def _set_onnx_model(app: FastAPI, model: ONNXModel) -> None:
-    app.state.onnx_model = model
-    app.state.input_size = _infer_hw_from_model(model)
+def _get_or_load_onnx_model(app: FastAPI, model_path: str) -> ONNXModel | None:
+    cache = getattr(app.state, "onnx_models", None)
+    if cache is None or not isinstance(cache, dict):
+        cache = {}
+        app.state.onnx_models = cache
 
+    model = cache.get(model_path)
+    if model is not None and getattr(model, "session", None) is not None:
+        input_sizes = getattr(app.state, "onnx_input_sizes", None)
+        if input_sizes is None or not isinstance(input_sizes, dict):
+            input_sizes = {}
+            app.state.onnx_input_sizes = input_sizes
+        if model_path not in input_sizes:
+            input_sizes[model_path] = _infer_hw_from_model(model)
+        return model
 
-def _get_or_load_onnx_model(app: FastAPI) -> ONNXModel | None:
-    model = getattr(app.state, "onnx_model", None)
-    if model is not None:
-        if getattr(model, "session", None) is None:
-            model = None
-        else:
-            if getattr(app.state, "input_size", None) is None:
-                app.state.input_size = _infer_hw_from_model(model)
-            return model
-
-    model_path = _resolve_model_path()
     try:
         model = ONNXModel.load(model_path)
     except Exception:
         logger.exception("Failed to load ONNX model.")
         return None
 
-    _set_onnx_model(app, model)
+    cache[model_path] = model
+    input_sizes = getattr(app.state, "onnx_input_sizes", None)
+    if input_sizes is None or not isinstance(input_sizes, dict):
+        input_sizes = {}
+        app.state.onnx_input_sizes = input_sizes
+    input_sizes[model_path] = _infer_hw_from_model(model)
     return model
 
 
@@ -240,21 +257,24 @@ def create_app() -> FastAPI:
         app.state.class_names = class_names
 
         if _resolve_default_backend() == "onnx":
-            model = _get_or_load_onnx_model(app)
+            model_path = _resolve_onnx_model_path(None)
+            model = _get_or_load_onnx_model(app, model_path)
             if model is None:
                 raise RuntimeError("ONNX model failed to load during startup.")
         else:
-            if _get_or_load_onnx_model(app) is None:
+            model_path = _resolve_onnx_model_path(None)
+            if _get_or_load_onnx_model(app, model_path) is None:
                 logger.warning("Skipping ONNX model startup load.")
 
         try:
             yield
         finally:
-            model = getattr(app.state, "onnx_model", None)
-            if model is not None:
-                model.close()
-            app.state.onnx_model = None
-            app.state.input_size = None
+            models = getattr(app.state, "onnx_models", None) or {}
+            for model in models.values():
+                if model is not None:
+                    model.close()
+            app.state.onnx_models = None
+            app.state.onnx_input_sizes = None
 
     app = FastAPI(
         title="AI Smartphone Decision Support System",
@@ -285,6 +305,7 @@ def create_app() -> FastAPI:
     async def identify_device(
         file: UploadFile = File(...),
         backend: str = Query(default=None, description="Inference backend: roboflow|onnx"),
+        model: str | None = Query(default=None, description="ONNX model key: model1|model2"),
     ) -> Dict[str, Any]:
         selected = (backend or _resolve_default_backend()).lower()
         if selected not in {"roboflow", "onnx"}:
@@ -310,11 +331,19 @@ def create_app() -> FastAPI:
                 logger.exception("Roboflow inference failed.")
                 raise HTTPException(status_code=502, detail="Roboflow inference failed.")
         else:
-            model = _get_or_load_onnx_model(app)
+            model_path = _resolve_onnx_model_path(model)
+            model = _get_or_load_onnx_model(app, model_path)
             if model is None:
                 raise HTTPException(status_code=500, detail="ONNX Model Engine is offline.")
 
-            input_tensor = preprocess_image(image_bytes, app.state.input_size)
+            input_sizes = getattr(app.state, "onnx_input_sizes", {})
+            input_size = input_sizes.get(model_path)
+            if input_size is None:
+                input_size = _infer_hw_from_model(model)
+                input_sizes[model_path] = input_size
+                app.state.onnx_input_sizes = input_sizes
+
+            input_tensor = preprocess_image(image_bytes, input_size)
             if input_tensor is None:
                 raise HTTPException(status_code=400, detail="Invalid image file provided.")
 
