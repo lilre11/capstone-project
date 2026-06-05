@@ -23,16 +23,16 @@ except Exception:  # pragma: no cover - optional dependency
 
 DEFAULT_MODEL_PATH = "models/onnx/best.onnx"
 DEFAULT_CLASS_NAMES = [
-    "apple_iphone_17_pm",
-    "samsung_s25_ultra",
-    "oppo_find_x9_pro",
-    "samsung_galaxy_z_fold_7",
     "asus_rog_phone_9_pro",
-    "oneplus_13",
-    "xiaomi_15t",
     "apple_iphone_16e",
-    "samsung_galaxy_a56_5g",
+    "apple_iphone_17_pm",
     "nothing_cmf_phone_2_pro",
+    "oneplus_13",
+    "oppo_find_x9_pro",
+    "samsung_galaxy_a56_5g",
+    "samsung_s25_ultra",
+    "samsung_galaxy_z_fold_7",
+    "xiaomi_15t",
 ]
 DEFAULT_BACKEND = "roboflow"
 DEFAULT_ROBOFLOW_API_URL = "https://serverless.roboflow.com"
@@ -203,21 +203,18 @@ def _extract_best_class(predictions: np.ndarray, num_classes: int) -> Tuple[int,
         row, col = np.unravel_index(np.argmax(scores), scores.shape)
         return int(col), float(scores[row, col])
 
-    # Policy 2: YOLO-like (N, A, 4+C)
+    # Policy 2: YOLO-like (N, A, 4+C) or transposed (N, 4+C, A)
     if preds.ndim == 3:
         p = preds[0]
+        if p.ndim == 2 and p.shape[0] == 4 + num_classes:
+            scores = p[4 : 4 + num_classes, :].T
+            row, col = np.unravel_index(np.argmax(scores), scores.shape)
+            return int(col), float(scores[row, col])
+
         if p.ndim == 2 and p.shape[-1] >= 4 + num_classes:
             scores = p[:, 4 : 4 + num_classes]
             row, col = np.unravel_index(np.argmax(scores), scores.shape)
             return int(col), float(scores[row, col])
-
-        # YOLO-like transposed (N, 4+C, A)
-        if p.ndim == 2 and p.shape[0] >= 4 + num_classes:
-            pt = p.T
-            if pt.shape[-1] >= 4 + num_classes:
-                scores = pt[:, 4 : 4 + num_classes]
-                row, col = np.unravel_index(np.argmax(scores), scores.shape)
-                return int(col), float(scores[row, col])
 
     # Policy 3: fallback - search across score-like tail columns
     if preds.ndim >= 1:

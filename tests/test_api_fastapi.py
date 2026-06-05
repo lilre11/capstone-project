@@ -73,6 +73,33 @@ def _force_onnx_reload(state):
     state.pop("onnx_input_sizes", None)
 
 
+def test_extract_best_class_uses_transposed_yolo_class_scores():
+    predictions = np.zeros((1, 14, 20), dtype=np.float32)
+    predictions[0, 0, 4] = 200.0
+    predictions[0, 1, 5] = 150.0
+    predictions[0, 4 + 3, 6] = 0.87
+
+    class_id, confidence = api_fastapi._extract_best_class(predictions, 10)
+
+    assert class_id == 3
+    assert np.isclose(confidence, 0.87)
+
+
+def test_default_class_names_match_onnx_training_order():
+    assert api_fastapi.DEFAULT_CLASS_NAMES == [
+        "asus_rog_phone_9_pro",
+        "apple_iphone_16e",
+        "apple_iphone_17_pm",
+        "nothing_cmf_phone_2_pro",
+        "oneplus_13",
+        "oppo_find_x9_pro",
+        "samsung_galaxy_a56_5g",
+        "samsung_s25_ultra",
+        "samsung_galaxy_z_fold_7",
+        "xiaomi_15t",
+    ]
+
+
 def test_identify_endpoint_model1_uses_correct_onnx_path(monkeypatch):
     loaded_paths = []
 
