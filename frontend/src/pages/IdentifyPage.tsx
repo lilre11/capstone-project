@@ -26,6 +26,7 @@ export default function IdentifyPage() {
   const [result, setResult] = useState<DetectionResponse | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [selectedModel, setSelectedModel] = useState<'model1' | 'model2'>('model1');
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -40,14 +41,14 @@ export default function IdentifyPage() {
     setPreview(URL.createObjectURL(file));
     setLoading(true);
     try {
-      const res = await detectDevice(file);
+      const res = await detectDevice(file, selectedModel);
       setResult(res);
     } catch {
       setError('Detection failed. Please try another image.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedModel]);
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -82,6 +83,19 @@ export default function IdentifyPage() {
       </div>
 
       {!result ? (
+        <>
+          <div className="model-selector glass-card">
+            <span className="model-label">Model</span>
+            <select
+              className="model-select"
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value as 'model1' | 'model2')}
+            >
+              <option value="model1">Model 1</option>
+              <option value="model2">Model 2</option>
+            </select>
+          </div>
+
         <div
           className={`upload-zone${dragover ? ' dragover' : ''}`}
           onDragOver={(e) => { e.preventDefault(); setDragover(true); }}
@@ -113,6 +127,7 @@ export default function IdentifyPage() {
             </>
           )}
         </div>
+        </>
       ) : (
         <div className="glass-card detection-result">
           {preview && <img src={preview} alt="Uploaded" />}

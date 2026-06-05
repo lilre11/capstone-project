@@ -22,11 +22,15 @@ const api = axios.create({
 
 /* ── Detection ─────────────────────────────── */
 
-export async function detectDevice(file: File): Promise<DetectionResponse> {
+export async function detectDevice(
+  file: File,
+  model?: 'model1' | 'model2',
+): Promise<DetectionResponse> {
   const form = new FormData();
   form.append('file', file);
   const { data } = await api.post<DetectionResponse>('/identify', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    params: { backend: 'onnx', model },
   });
   return data;
 }
