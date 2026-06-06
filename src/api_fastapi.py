@@ -37,11 +37,12 @@ DEFAULT_CLASS_NAMES = [
 DEFAULT_BACKEND = "roboflow"
 DEFAULT_ROBOFLOW_API_URL = "https://serverless.roboflow.com"
 DEFAULT_ROBOFLOW_MODEL_ID = "smartphones_capstone/4"
-DEFAULT_ONNX_MODEL_KEY = "model1"
 ONNX_MODEL_PATHS = {
     "model1": "computer_vision/models/onnx/model_1.onnx",
     "model2": "computer_vision/models/onnx/model_2.onnx",
+    "model3": "computer_vision/models/onnx/model_3.onnx",
 }
+DEFAULT_ONNX_MODEL_KEY = next(reversed(ONNX_MODEL_PATHS))
 
 logger = logging.getLogger(__name__)
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
@@ -302,7 +303,10 @@ def create_app() -> FastAPI:
     async def identify_device(
         file: UploadFile = File(...),
         backend: str = Query(default=None, description="Inference backend: roboflow|onnx"),
-        model: str | None = Query(default=None, description="ONNX model key: model1|model2"),
+        model: str | None = Query(
+            default=None,
+            description="ONNX model key: model1|model2|model3",
+        ),
     ) -> Dict[str, Any]:
         selected = (backend or _resolve_default_backend()).lower()
         if selected not in {"roboflow", "onnx"}:

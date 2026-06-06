@@ -24,7 +24,7 @@ const api = axios.create({
 
 export async function detectDevice(
   file: File,
-  model?: 'model1' | 'model2',
+  model?: 'model1' | 'model2' | 'model3',
 ): Promise<DetectionResponse> {
   const form = new FormData();
   form.append('file', file);

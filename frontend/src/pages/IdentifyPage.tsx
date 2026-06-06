@@ -18,6 +18,15 @@ const MODEL_DISPLAY: Record<string, string> = {
   nothing_cmf_phone_2_pro: 'CMF Phone 2 Pro',
 };
 
+const MODEL_OPTIONS = [
+  { value: 'model1', label: 'Model 1' },
+  { value: 'model2', label: 'Model 2' },
+  { value: 'model3', label: 'Model 3' },
+] as const;
+
+type SelectableModel = (typeof MODEL_OPTIONS)[number]['value'];
+const DEFAULT_MODEL = MODEL_OPTIONS[MODEL_OPTIONS.length - 1].value;
+
 export default function IdentifyPage() {
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -26,7 +35,7 @@ export default function IdentifyPage() {
   const [result, setResult] = useState<DetectionResponse | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [selectedModel, setSelectedModel] = useState<'model1' | 'model2'>('model1');
+  const [selectedModel, setSelectedModel] = useState<SelectableModel>(DEFAULT_MODEL);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -89,10 +98,13 @@ export default function IdentifyPage() {
             <select
               className="model-select"
               value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value as 'model1' | 'model2')}
+              onChange={(e) => setSelectedModel(e.target.value as SelectableModel)}
             >
-              <option value="model1">Model 1</option>
-              <option value="model2">Model 2</option>
+              {MODEL_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 

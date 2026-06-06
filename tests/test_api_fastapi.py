@@ -146,6 +146,29 @@ def test_identify_endpoint_model2_uses_correct_onnx_path(monkeypatch):
     assert loaded_paths[-1].endswith("computer_vision/models/onnx/model_2.onnx")
 
 
+def test_identify_endpoint_model3_uses_correct_onnx_path(monkeypatch):
+    loaded_paths = []
+
+    def fake_load(path, use_cuda=None):
+        loaded_paths.append(path)
+        return _FakeONNXModel()
+
+    monkeypatch.setattr(api_fastapi.ONNXModel, "load", fake_load)
+
+    image_bytes = _make_test_image_bytes()
+    with TestClient(app) as client:
+        state = getattr(app.state, "_state", {})
+        _force_onnx_reload(state)
+        response = client.post(
+            "/identify?backend=onnx&model=model3",
+            files={"file": ("sample.jpg", image_bytes, "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    assert loaded_paths
+    assert loaded_paths[-1].endswith("computer_vision/models/onnx/model_3.onnx")
+
+
 def test_identify_endpoint_invalid_model_returns_400():
     image_bytes = _make_test_image_bytes()
 
@@ -158,16 +181,28 @@ def test_identify_endpoint_invalid_model_returns_400():
     assert response.status_code == 400
 
 
-def test_identify_endpoint_accepts_backend_onnx_query_param():
+def test_identify_endpoint_accepts_backend_onnx_query_param(monkeypatch):
+    loaded_paths = []
+
+    def fake_load(path, use_cuda=None):
+        loaded_paths.append(path)
+        return _FakeONNXModel()
+
+    monkeypatch.setattr(api_fastapi.ONNXModel, "load", fake_load)
+
     image_bytes = _make_test_image_bytes()
 
     with TestClient(app) as client:
+        state = getattr(app.state, "_state", {})
+        _force_onnx_reload(state)
         response = client.post(
             "/identify?backend=onnx",
             files={"file": ("sample.jpg", image_bytes, "image/jpeg")},
         )
 
     assert response.status_code == 200
+    assert loaded_paths
+    assert loaded_paths[-1].endswith("computer_vision/models/onnx/model_3.onnx")
     payload = response.json()
     assert payload["detected_object"] == "smartphone"
     assert "model_id" in payload
