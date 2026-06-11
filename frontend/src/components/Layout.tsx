@@ -32,7 +32,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </ul>
       </nav>
-      <div className="navbar-gradient-line" />
       <main className="page-wrapper">{children}</main>
       <footer className="footer">
         AI-Powered Smartphone Decision Support System — Capstone Project 2026

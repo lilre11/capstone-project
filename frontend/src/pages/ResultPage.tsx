@@ -22,14 +22,17 @@ export default function ResultPage({ rankingData }: Props) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [animatedDash, setAnimatedDash] = useState(0);
 
   const top = rankingData?.top_match;
   const topEntry = rankingData?.rankings?.[0];
+  const circumference = 2 * Math.PI * 58;
 
-  // Animate score counter
+  // Animate score counter + ring draw
   useEffect(() => {
     if (!top) return;
     const target = top.score;
+    const targetDash = circumference * (1 - target / 100);
     let current = 0;
     const step = target / 60;
     const timer = setInterval(() => {
@@ -39,9 +42,10 @@ export default function ResultPage({ rankingData }: Props) {
         clearInterval(timer);
       }
       setAnimatedScore(current);
+      setAnimatedDash(circumference * (1 - current / 100));
     }, 16);
     return () => clearInterval(timer);
-  }, [top]);
+  }, [top, circumference]);
 
   if (!rankingData || !top) {
     return (
@@ -55,10 +59,6 @@ export default function ResultPage({ rankingData }: Props) {
     );
   }
 
-  const circumference = 2 * Math.PI * 65;
-  const scorePercent = top.score / 100;
-  const dashOffset = circumference * (1 - scorePercent);
-
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       {/* Hero */}
@@ -69,22 +69,15 @@ export default function ResultPage({ rankingData }: Props) {
 
         <div className="result-score-ring">
           <div className="score-circle">
-            <svg width="160" height="160">
-              <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="58" fill="none" stroke="var(--surface-2)" strokeWidth="6" />
               <circle
-                cx="80" cy="80" r="65" fill="none"
-                stroke="url(#scoreGrad)" strokeWidth="8"
+                cx="70" cy="70" r="58" fill="none"
+                stroke="var(--primary)" strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
-                strokeDashoffset={dashOffset}
-                style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
+                strokeDashoffset={animatedDash}
               />
-              <defs>
-                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#06b6d4" />
-                  <stop offset="100%" stopColor="#0891b2" />
-                </linearGradient>
-              </defs>
             </svg>
             <div className="score-circle-value">
               <span className="score-number">{animatedScore.toFixed(1)}</span>
