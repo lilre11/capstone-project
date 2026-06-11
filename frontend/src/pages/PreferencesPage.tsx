@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { submitPreferences, runRanking } from '../api/client';
-import type { RankingResponse } from '../types';
+import type { PreferencesRequest, RankingResponse } from '../types';
+
+type PreferenceKey = keyof PreferencesRequest;
 
 const CRITERIA = [
   { key: 'price', label: 'Price Sensitivity', icon: '💰', desc: 'How important is a lower price?' },
@@ -14,7 +16,7 @@ const CRITERIA = [
   { key: 'weight', label: 'Lightweight', icon: '🪶', desc: 'Prefer a lighter phone?' },
   { key: 'charging', label: 'Charging Speed', icon: '🔌', desc: 'Fast charging capability' },
   { key: 'screen_ratio', label: 'Screen Size', icon: '📱', desc: 'Edge-to-edge display ratio' },
-];
+] satisfies Array<{ key: PreferenceKey; label: string; icon: string; desc: string }>;
 
 const PRESETS: Record<string, Record<string, number>> = {
   balanced: { price: 50, battery: 50, camera: 50, antutu: 50, storage: 50, weight: 50, charging: 50, screen_ratio: 50 },
@@ -64,9 +66,18 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
     setLoading(true);
     setError('');
     try {
-      const normalized: Record<string, number> = {};
+      const normalized: PreferencesRequest = {
+        price: 0.5,
+        battery: 0.5,
+        camera: 0.5,
+        antutu: 0.5,
+        storage: 0.5,
+        weight: 0.5,
+        charging: 0.5,
+        screen_ratio: 0.5,
+      };
       CRITERIA.forEach((c) => { normalized[c.key] = (values[c.key] || 50) / 100; });
-      const { weights } = await submitPreferences(normalized as any);
+      const { weights } = await submitPreferences(normalized);
       const ranking = await runRanking(weights);
       onRankingComplete(ranking);
       navigate('/results');

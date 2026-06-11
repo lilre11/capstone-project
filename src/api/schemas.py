@@ -124,11 +124,24 @@ class ExplainRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
     ranking_id: str
     conversation_history: Optional[List[Dict[str, str]]] = None
+    model: Optional[str] = None
 
 
 class ExplainResponse(BaseModel):
     answer: str
     model_used: str = "template"
+
+
+class ChatRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=2000)
+    ranking_id: Optional[str] = None
+    conversation_history: Optional[List[Dict[str, str]]] = None
+    model: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    model_used: str = "chatbot"
 
 
 # ── Detection (matches existing /identify response) ─────────────────────────

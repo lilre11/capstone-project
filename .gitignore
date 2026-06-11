@@ -1,4 +1,4 @@
-# image datasets
+# Image datasets
 data/
 dataset/
 images/
@@ -20,8 +20,14 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
-# Model artifacts (untracked by default; model in repo is intentionally committed)
-models/onnx/*.onnx
+# Generated training checkpoints and exports
+computer_vision/training_artifacts/**/*.onnx
+computer_vision/training_artifacts/**/*.pt
+computer_vision/training_artifacts/**/weights/
+
+# Local runtime output
+/.tmp-*
 
 superpowers/
 docs/superpowers/specs/
+tools/

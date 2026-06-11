@@ -10,6 +10,7 @@ import type {
   PreferencesResponse,
   RankingResponse,
   ExplainResponse,
+  ChatResponse,
   DetectionResponse,
   ChatMessage,
 } from '../types';
@@ -78,11 +79,28 @@ export async function askExplanation(
   question: string,
   rankingId: string,
   conversationHistory?: ChatMessage[],
+  model?: string,
 ): Promise<ExplainResponse> {
   const { data } = await api.post<ExplainResponse>('/api/explain', {
     question,
     ranking_id: rankingId,
     conversation_history: conversationHistory,
+    model,
+  });
+  return data;
+}
+
+export async function askChatbot(
+  question: string,
+  rankingId?: string,
+  conversationHistory?: ChatMessage[],
+  model?: string,
+): Promise<ChatResponse> {
+  const { data } = await api.post<ChatResponse>('/api/chat', {
+    question,
+    ranking_id: rankingId,
+    conversation_history: conversationHistory,
+    model,
   });
   return data;
 }

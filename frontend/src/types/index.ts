@@ -110,6 +110,18 @@ export interface ExplainResponse {
   model_used: string;
 }
 
+export interface ChatRequest {
+  question: string;
+  ranking_id?: string;
+  conversation_history?: ChatMessage[];
+  model?: string;
+}
+
+export interface ChatResponse {
+  answer: string;
+  model_used: string;
+}
+
 // ── Detection ───────────────────────────────
 
 export interface DetectionResponse {

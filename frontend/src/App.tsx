@@ -10,6 +10,7 @@ import ResultPage from './pages/ResultPage';
 import RankingsPage from './pages/RankingsPage';
 import ComparePage from './pages/ComparePage';
 import ExplainPage from './pages/ExplainPage';
+import ChatbotPage from './pages/ChatbotPage';
 import type { RankingResponse } from './types';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/results" element={<ResultPage rankingData={rankingData} />} />
           <Route path="/rankings" element={<RankingsPage rankingData={rankingData} />} />
           <Route path="/compare" element={<ComparePage rankingData={rankingData} />} />
+          <Route path="/chat" element={<ChatbotPage rankingData={rankingData} />} />
           <Route path="/explain" element={<ExplainPage rankingData={rankingData} />} />
         </Routes>
       </AnimatePresence>
