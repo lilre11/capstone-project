@@ -31,7 +31,7 @@ export async function detectDevice(
   form.append('file', file);
   const { data } = await api.post<DetectionResponse>('/identify', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
-    params: { backend: 'onnx', model },
+    params: { model },
   });
   return data;
 }
@@ -102,6 +102,22 @@ export async function askChatbot(
     conversation_history: conversationHistory,
     model,
   });
+  return data;
+}
+
+/* ── Artifacts ─────────────────────────────── */
+
+export interface ArtifactModelInfo {
+  images: string[];
+  metrics: Record<string, number | string> | null;
+}
+
+export interface ArtifactsResponse {
+  [modelName: string]: ArtifactModelInfo;
+}
+
+export async function getArtifacts(): Promise<ArtifactsResponse> {
+  const { data } = await api.get<ArtifactsResponse>('/api/artifacts');
   return data;
 }
 

@@ -9,15 +9,19 @@ POST /api/preferences       – Submit preference sliders → AHP weights
 POST /api/rank              – Run TOPSIS ranking
 GET  /api/rank/{id}         – Retrieve a saved ranking
 POST /api/explain           – Ask AI to explain a ranking
+GET  /api/artifacts         – List training artifacts
 """
 
 from __future__ import annotations
 
+import csv
 import logging
 import uuid
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.api.schemas import (
@@ -280,3 +284,59 @@ async def explain_ranking(body: ExplainRequest, db: Session = Depends(get_db)):
         model_used = "template_fallback"
 
     return ExplainResponse(answer=answer, model_used=model_used)
+
+
+# ── Training Artifacts ─────────────────────────────────────────────────────────
+
+ARTIFACT_BASE = Path(__file__).resolve().parents[2] / "computer_vision" / "training_artifacts"
+
+GALLERY_IMAGES = [
+    "confusion_matrix_normalized.png",
+    "BoxPR_curve.png",
+    "BoxF1_curve.png",
+    "BoxP_curve.png",
+    "BoxR_curve.png",
+    "results.png",
+]
+
+MODEL_DIRS = {
+    "model_1": ("model_1", ARTIFACT_BASE / "model_1"),
+    "model_2": ("model_2", ARTIFACT_BASE / "model_2"),
+    "model_3": ("model_3", ARTIFACT_BASE / "model_3" / "runs"),
+}
+
+
+@router.get("/artifacts", tags=["Artifacts"])
+def list_artifacts():
+    models: dict[str, dict] = {}
+    for key, (name, model_dir) in MODEL_DIRS.items():
+        if not model_dir.is_dir():
+            continue
+
+        images: list[str] = []
+        for fname in GALLERY_IMAGES:
+            fp = model_dir / fname
+            if fp.is_file():
+                images.append(fname)
+
+        metrics: dict | None = None
+        csv_path = model_dir / "results.csv"
+        if csv_path.is_file():
+            try:
+                with open(csv_path, newline="") as f:
+                    reader = csv.DictReader(f)
+                    rows = list(reader)
+                    if rows:
+                        raw = rows[-1]
+                        metrics = {
+                            k: round(float(v), 4) if v.replace(".", "", 1).strip("-").isdigit() else v
+                            for k, v in raw.items()
+                        }
+            except Exception:
+                pass
+
+        models[name] = {
+            "images": images,
+            "metrics": metrics,
+        }
+    return models

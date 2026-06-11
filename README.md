@@ -12,7 +12,7 @@ An intelligent full-stack decision support system that helps users identify and 
 ## Tech Stack
 - Backend: FastAPI, SQLite, SQLAlchemy, pytest, ONNX Runtime
 - Frontend: React, Vite, TypeScript, Recharts, Framer Motion, Axios
-- Vision: Roboflow API with local ONNX fallback support
+- Vision: ONNX Runtime with 3 trained YOLO models
 
 ## Project Structure
 ```text
@@ -31,9 +31,7 @@ computer_vision/      Training artifacts and exported models
 Create a `.env` file in the project root with any keys you plan to use:
 
 ```env
-ROBOFLOW_API_KEY=your_roboflow_key
 OPENROUTER_API_KEY=your_openrouter_key
-DEFAULT_BACKEND=roboflow
 ```
 
 If `OPENROUTER_API_KEY` is missing, the app falls back to local explanation templates.

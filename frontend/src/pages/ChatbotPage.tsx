@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 import { askChatbot } from '../api/client';
 import type { ChatMessage, RankingResponse } from '../types';
@@ -20,6 +21,14 @@ const RANKING_PROMPTS = [
   'Compare the top 2 phones for me.',
   'Which criterion affected the result most?',
 ];
+
+const MODEL_LABELS: Record<string, string> = {
+  'openrouter/free': 'Auto (Free Router)',
+  'google/gemma-4-31b-it:free': 'Gemma 4 31B',
+  'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
+  'openai/gpt-oss-120b:free': 'GPT OSS 120B',
+  'qwen/qwen3-next-80b-a3b-instruct:free': 'Qwen3 Next 80B',
+};
 
 const CHAT_MODELS = [
   { value: 'openrouter/free', label: 'Auto (Free Router)' },
@@ -65,9 +74,10 @@ export default function ChatbotPage({ rankingData }: Props) {
         nextHistory,
         selectedModel,
       );
+      const modelLabel = MODEL_LABELS[response.model_used] || response.model_used;
       const replyLabel = response.model_used === 'template_fallback'
         ? response.answer
-        : `[${response.model_used}]\n\n${response.answer}`;
+        : `[${modelLabel}]\n\n${response.answer}`;
       setMessages((prev) => [...prev, { role: 'assistant', content: replyLabel }]);
     } catch {
       setMessages((prev) => [
@@ -146,7 +156,7 @@ export default function ChatbotPage({ rankingData }: Props) {
               <span className="chat-bubble-label">
                 {msg.role === 'assistant' ? 'SmartPick AI' : 'You'}
               </span>
-              {msg.content}
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
           ))}
 

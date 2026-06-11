@@ -8,6 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { to: '/identify', label: 'Identify' },
     { to: '/preferences', label: 'Analyze' },
     { to: '/rankings', label: 'Rankings' },
+    { to: '/model-performance', label: 'Model' },
     { to: '/chat', label: 'Chatbot' },
   ];
 

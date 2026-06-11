@@ -1,12 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 import { askExplanation } from '../api/client';
 import type { ChatMessage, RankingResponse } from '../types';
 
 interface Props {
   rankingData: RankingResponse | null;
 }
+
+const MODEL_LABELS: Record<string, string> = {
+  'openrouter/free': 'Auto (Free Router)',
+  'google/gemma-4-31b-it:free': 'Gemma 4 31B',
+  'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
+  'openai/gpt-oss-120b:free': 'GPT OSS 120B',
+  'qwen/qwen3-next-80b-a3b-instruct:free': 'Qwen3 Next 80B',
+};
 
 const EXPLAIN_MODELS = [
   { value: 'openrouter/free', label: 'Auto (Free Router)' },
@@ -42,9 +51,10 @@ export default function ExplainPage({ rankingData }: Props) {
           undefined,
           selectedModel,
         );
+        const modelLabel = MODEL_LABELS[res.model_used] || res.model_used;
         const content = res.model_used === 'template_fallback'
           ? res.answer
-          : `[${res.model_used}]\n\n${res.answer}`;
+          : `[${modelLabel}]\n\n${res.answer}`;
         setMessages([{ role: 'assistant', content: content }]);
       } catch {
         setMessages([{
@@ -72,9 +82,10 @@ export default function ExplainPage({ rankingData }: Props) {
         content: m.content,
       }));
       const res = await askExplanation(question, rankingData.ranking_id, history, selectedModel);
+      const modelLabel = MODEL_LABELS[res.model_used] || res.model_used;
       const content = res.model_used === 'template_fallback'
         ? res.answer
-        : `[${res.model_used}]\n\n${res.answer}`;
+        : `[${modelLabel}]\n\n${res.answer}`;
       setMessages((prev) => [...prev, { role: 'assistant', content: content }]);
     } catch {
       setMessages((prev) => [
@@ -131,7 +142,7 @@ export default function ExplainPage({ rankingData }: Props) {
             <span className="chat-bubble-label">
               {msg.role === 'assistant' ? '🤖 AI Explainer' : '👤 You'}
             </span>
-            {msg.content}
+            <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         ))}
         {loading && (

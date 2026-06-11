@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { detectDevice } from '../api/client';
+import ImageAnnotator from '../components/ImageAnnotator';
 import type { DetectionResponse } from '../types';
 
 // Map model_id → display name
@@ -142,8 +143,15 @@ export default function IdentifyPage() {
         </>
       ) : (
         <div className="glass-card detection-result">
-          {preview && <img src={preview} alt="Uploaded" />}
-          <div className="badge badge-green" style={{ marginBottom: 16 }}>
+          {preview && (
+            <ImageAnnotator
+              src={preview}
+              detections={result.detections ?? []}
+              imageWidth={result.image_width}
+              imageHeight={result.image_height}
+            />
+          )}
+          <div className="badge badge-green" style={{ marginTop: 16, marginBottom: 16 }}>
             ✓ Device Detected
           </div>
           <div className="detection-model gradient-text">{displayName}</div>
