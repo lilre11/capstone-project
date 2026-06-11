@@ -11,19 +11,14 @@ const fadeUp = {
 };
 
 const features = [
-  { icon: '🔍', title: 'YOLOv8 Detection', desc: 'Upload a photo and our YOLO model identifies the smartphone model instantly.', color: 'blue' },
-  { icon: '📊', title: 'TOPSIS Ranking', desc: 'AHP weights your priorities, TOPSIS ranks phones against the ideal solution.', color: 'purple' },
-  { icon: '🤖', title: 'LLM Explainer', desc: 'Ask the AI why a phone was recommended and get plain-language answers.', color: 'green' },
+  { title: 'YOLOv8 Detection', desc: 'Upload a photo and our YOLO model identifies the smartphone model instantly.' },
+  { title: 'TOPSIS Ranking', desc: 'AHP weights your priorities, TOPSIS ranks phones against the ideal solution.' },
+  { title: 'LLM Explainer', desc: 'Ask the AI why a phone was recommended and get plain-language answers.' },
 ];
 
 export default function LandingPage() {
   return (
     <section className="landing-hero">
-      {/* Animated background orbs */}
-      <div className="orb orb-blue" />
-      <div className="orb orb-purple" />
-      <div className="orb orb-green" />
-
       <motion.div
         className="badge badge-primary"
         initial={{ opacity: 0, scale: 0.8 }}
@@ -31,7 +26,7 @@ export default function LandingPage() {
         transition={{ duration: 0.5 }}
         style={{ marginBottom: 24 }}
       >
-        ✨ AI-Powered Decision Support
+        AI-Powered Decision Support
       </motion.div>
 
       <motion.h1
@@ -64,10 +59,10 @@ export default function LandingPage() {
         variants={fadeUp}
       >
         <Link to="/preferences" className="btn btn-primary btn-lg" id="cta-start">
-          🚀 Start Analysis
+          Start Analysis
         </Link>
         <Link to="/identify" className="btn btn-secondary btn-lg" id="cta-identify">
-          📷 Identify Device
+          Identify Device
         </Link>
       </motion.div>
 
@@ -79,8 +74,12 @@ export default function LandingPage() {
         variants={fadeUp}
       >
         {features.map((f) => (
-          <div key={f.title} className="glass-card landing-feature-card">
-            <div className={`feature-icon feature-icon-${f.color}`}>{f.icon}</div>
+          <div key={f.title} className="card landing-feature-card">
+            <div className="feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
             <h3>{f.title}</h3>
             <p>{f.desc}</p>
           </div>

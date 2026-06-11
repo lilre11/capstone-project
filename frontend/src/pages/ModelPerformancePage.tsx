@@ -67,7 +67,7 @@ export default function ModelPerformancePage() {
         <p>Training metrics and visualizations for all YOLO models.</p>
       </div>
 
-      <div className="model-selector glass-card">
+      <div className="model-selector card">
         <span className="model-label">Model</span>
         <select
           className="model-select"
@@ -85,7 +85,7 @@ export default function ModelPerformancePage() {
       {parsed && (
         <div className="metrics-grid">
           {Object.entries(parsed).map(([label, value]) => (
-            <div key={label} className="glass-card metric-card">
+            <div key={label} className="card metric-card">
               <div className="metric-value gradient-text">{value}</div>
               <div className="metric-label">{label}</div>
             </div>
@@ -109,7 +109,7 @@ export default function ModelPerformancePage() {
             return (
               <motion.div
                 key={img}
-                className="glass-card gallery-card"
+                className="card gallery-card"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setSelectedImage(imgUrl)}
               >
@@ -127,7 +127,7 @@ export default function ModelPerformancePage() {
       )}
 
       {!active && (
-        <div className="glass-card" style={{ padding: 32, textAlign: 'center' }}>
+        <div className="card" style={{ padding: '32px', textAlign: 'center' }}>
           <p>No artifacts found for this model.</p>
         </div>
       )}

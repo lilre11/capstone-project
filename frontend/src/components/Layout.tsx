@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <nav className="navbar">
         <Link to="/" className="navbar-brand">
-          <span className="navbar-brand-icon">📱</span>
+          <span className="navbar-brand-icon" />
           SmartPick AI
         </Link>
         <ul className="navbar-links">

@@ -108,13 +108,13 @@ export default function ChatbotPage({ rankingData }: Props) {
           explanation and comparison.
         </p>
         {!rankingData && (
-          <Link to="/preferences" className="btn btn-secondary" style={{ marginTop: 20 }}>
+          <Link to="/preferences" className="btn btn-secondary mt-xl">
             Run Analysis First
           </Link>
         )}
       </div>
 
-      <div className="chatbot-shell glass-card-static">
+      <div className="chatbot-shell card-static">
         <div className="chatbot-toolbar">
           <label className="chatbot-model-picker">
             <span className="chatbot-model-label">Free model</span>
@@ -162,9 +162,7 @@ export default function ChatbotPage({ rankingData }: Props) {
 
           {loading && (
             <div className="typing-indicator">
-              <span />
-              <span />
-              <span />
+              <div className="typing-indicator-bar" />
             </div>
           )}
           <div ref={bottomRef} />

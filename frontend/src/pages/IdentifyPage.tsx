@@ -94,7 +94,7 @@ export default function IdentifyPage() {
 
       {!result ? (
         <>
-          <div className="model-selector glass-card">
+          <div className="model-selector card">
             <span className="model-label">Model</span>
             <select
               className="model-select"
@@ -133,7 +133,6 @@ export default function IdentifyPage() {
             </div>
           ) : (
             <>
-              <div className="upload-icon">📤</div>
               <h3>Drag & drop your smartphone photo</h3>
               <p>or click to browse files</p>
               <p className="upload-hint">Supports JPG, PNG — Max 10 MB</p>
@@ -142,7 +141,7 @@ export default function IdentifyPage() {
         </div>
         </>
       ) : (
-        <div className="glass-card detection-result">
+        <div className="card detection-result">
           {preview && (
             <ImageAnnotator
               src={preview}
@@ -151,8 +150,8 @@ export default function IdentifyPage() {
               imageHeight={result.image_height}
             />
           )}
-          <div className="badge badge-green" style={{ marginTop: 16, marginBottom: 16 }}>
-            ✓ Device Detected
+          <div className="badge badge-green" style={{ margin: '16px 0' }}>
+            Device Detected
           </div>
           <div className="detection-model gradient-text">{displayName}</div>
           <div className="detection-confidence">
@@ -172,7 +171,7 @@ export default function IdentifyPage() {
         </div>
       )}
 
-      {error && <div className="error-message" style={{ marginTop: 16 }}>{error}</div>}
+      {error && <div className="error-message mt-lg">{error}</div>}
     </motion.div>
   );
 }

@@ -3,15 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { RankingResponse } from '../types';
 
-const CRITERIA_LABELS: Record<string, { label: string; icon: string }> = {
-  price: { label: 'Price', icon: '💰' },
-  battery: { label: 'Battery', icon: '🔋' },
-  camera_score: { label: 'Camera', icon: '📸' },
-  antutu: { label: 'Performance', icon: '⚡' },
-  storage: { label: 'Storage', icon: '💾' },
-  weight: { label: 'Weight', icon: '🪶' },
-  charging: { label: 'Charging', icon: '🔌' },
-  screen_ratio: { label: 'Screen', icon: '📱' },
+const CRITERIA_LABELS: Record<string, string> = {
+  price: 'Price',
+  battery: 'Battery',
+  camera_score: 'Camera',
+  antutu: 'Performance',
+  storage: 'Storage',
+  weight: 'Weight',
+  charging: 'Charging',
+  screen_ratio: 'Screen',
 };
 
 interface Props {
@@ -48,7 +48,7 @@ export default function ResultPage({ rankingData }: Props) {
       <div className="page-header">
         <h1>No Results Yet</h1>
         <p>Run an analysis first from the preferences page.</p>
-        <Link to="/preferences" className="btn btn-primary" style={{ marginTop: 24 }}>
+        <Link to="/preferences" className="btn btn-primary mt-xl">
           Go to Preferences
         </Link>
       </div>
@@ -62,7 +62,7 @@ export default function ResultPage({ rankingData }: Props) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       {/* Hero */}
-      <div className="glass-card result-hero">
+      <div className="card result-hero">
         <div className="result-rank-badge">#{top.rank}</div>
         <div className="result-phone-name gradient-text">{top.model_name}</div>
         <div className="result-brand">{top.brand}</div>
@@ -81,8 +81,8 @@ export default function ResultPage({ rankingData }: Props) {
               />
               <defs>
                 <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#8b5cf6" />
+                  <stop offset="0%" stopColor="#06b6d4" />
+                  <stop offset="100%" stopColor="#0891b2" />
                 </linearGradient>
               </defs>
             </svg>
@@ -92,16 +92,10 @@ export default function ResultPage({ rankingData }: Props) {
             </div>
           </div>
 
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 4 }}>
-              Closeness Coefficient
-            </div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 700 }}>
-              {top.closeness_coefficient.toFixed(4)}
-            </div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 8 }}>
-              Method: {rankingData.method}
-            </div>
+          <div className="score-details">
+            <div className="score-details-label">Closeness Coefficient</div>
+            <div className="score-details-value">{top.closeness_coefficient.toFixed(4)}</div>
+            <div className="score-details-method">Method: {rankingData.method}</div>
           </div>
         </div>
       </div>
@@ -110,19 +104,19 @@ export default function ResultPage({ rankingData }: Props) {
       {topEntry && (
         <div className="criteria-grid">
           {Object.entries(topEntry.weighted_normalized).map(([key, val]) => {
-            const meta = CRITERIA_LABELS[key] || { label: key, icon: '📊' };
+            const label = CRITERIA_LABELS[key] || key;
             const max = Math.max(...rankingData.rankings.map((r) => r.weighted_normalized[key] || 0));
             const pct = max > 0 ? (val / max) * 100 : 0;
             return (
               <motion.div
                 key={key}
-                className="glass-card criteria-card"
+                className="card criteria-card"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
                 <div className="criteria-card-header">
-                  <span className="criteria-card-name">{meta.icon} {meta.label}</span>
+                  <span className="criteria-card-name">{label}</span>
                   <span className="criteria-card-value">{val.toFixed(4)}</span>
                 </div>
                 <div className="criteria-bar">
@@ -137,16 +131,16 @@ export default function ResultPage({ rankingData }: Props) {
       {/* TOPSIS Details */}
       <div className="topsis-panel">
         <button className="topsis-toggle" onClick={() => setShowDetails(!showDetails)}>
-          <span>📐 TOPSIS Calculation Details</span>
+          <span>TOPSIS Calculation Details</span>
           <span className={`toggle-arrow${showDetails ? ' open' : ''}`}>▼</span>
         </button>
         {showDetails && (
           <motion.div
-            className="glass-card-static topsis-content"
+            className="card-static topsis-content"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
           >
-            <h4 style={{ marginBottom: 12 }}>Weights Used</h4>
+            <h4 className="mb-md">Weights Used</h4>
             <table className="topsis-table">
               <thead>
                 <tr>
@@ -170,7 +164,7 @@ export default function ResultPage({ rankingData }: Props) {
               </tbody>
             </table>
 
-            <h4 style={{ margin: '20px 0 12px' }}>Separation Distances (Top 5)</h4>
+            <h4 className="separation-title">Separation Distances (Top 5)</h4>
             <table className="topsis-table">
               <thead>
                 <tr><th>Rank</th><th>Phone</th><th>S⁺</th><th>S⁻</th><th>C⁺</th></tr>
@@ -182,7 +176,7 @@ export default function ResultPage({ rankingData }: Props) {
                     <td>{r.model_name}</td>
                     <td>{r.s_plus.toFixed(4)}</td>
                     <td>{r.s_minus.toFixed(4)}</td>
-                    <td style={{ color: 'var(--accent-blue)', fontWeight: 700 }}>{r.closeness_coefficient.toFixed(4)}</td>
+                    <td className="c-plus-value">{r.closeness_coefficient.toFixed(4)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -194,16 +188,16 @@ export default function ResultPage({ rankingData }: Props) {
       {/* Actions */}
       <div className="result-actions">
         <button className="btn btn-primary" onClick={() => navigate('/explain')}>
-          🤖 AI Explanation
+          AI Explanation
         </button>
         <button className="btn btn-secondary" onClick={() => navigate('/compare')}>
-          📊 Compare Top 3
+          Compare Top 3
         </button>
         <button className="btn btn-secondary" onClick={() => navigate('/rankings')}>
-          📋 All Rankings
+          All Rankings
         </button>
         <button className="btn btn-ghost" onClick={() => navigate('/preferences')}>
-          ← New Analysis
+          New Analysis
         </button>
       </div>
     </motion.div>
