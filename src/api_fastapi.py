@@ -1,3 +1,4 @@
+import base64
 import io
 import logging
 import os
@@ -6,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile, Query
+from fastapi import FastAPI, File, HTTPException, UploadFile, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -241,10 +242,70 @@ def create_app() -> FastAPI:
             "model_id": detected_model,
             "confidence_score": round(float(confidence_score), 3),
             "action": "trigger_db_lookup" if confidence_score > 0.5 else "prompt_user_retry",
-            "detections": detections,
+            "detections": detections[:1],
             "image_width": orig_size[0],
             "image_height": orig_size[1],
         }
+
+    @app.websocket("/ws/detect")
+    async def ws_detect(websocket: WebSocket, model: str | None = None):
+        await websocket.accept()
+        try:
+            model_path = _resolve_onnx_model_path(model)
+        except HTTPException:
+            await websocket.send_json({"type": "error", "message": "Invalid model"})
+            await websocket.close()
+            return
+
+        model_obj = _get_or_load_onnx_model(app, model_path)
+        if model_obj is None:
+            await websocket.send_json({"type": "error", "message": "Model engine offline"})
+            await websocket.close()
+            return
+
+        input_sizes = getattr(app.state, "onnx_input_sizes", {})
+        input_size = input_sizes.get(model_path)
+        if input_size is None:
+            input_size = _infer_hw_from_model(model_obj)
+            input_sizes[model_path] = input_size
+            app.state.onnx_input_sizes = input_sizes
+
+        class_names = app.state.class_names
+
+        try:
+            while True:
+                msg = await websocket.receive_json()
+                if msg.get("type") != "frame":
+                    continue
+
+                image_bytes = base64.b64decode(msg["data"])
+                result = preprocess_image(image_bytes, input_size)
+                if result is None:
+                    continue
+
+                input_tensor, orig_size = result
+                outputs = model_obj.predict(input_tensor)
+                if not outputs:
+                    continue
+
+                detected_model, confidence_score, detections = extract_detections(
+                    outputs[0],
+                    class_names,
+                    orig_size,
+                    input_size,
+                    conf_threshold=0.3,
+                )
+
+                await websocket.send_json({
+                    "type": "detection",
+                    "model_id": detected_model,
+                    "confidence_score": round(float(confidence_score), 3),
+                    "detections": detections[:1],
+                    "image_width": orig_size[0],
+                    "image_height": orig_size[1],
+                })
+        except WebSocketDisconnect:
+            pass
 
     return app
 
