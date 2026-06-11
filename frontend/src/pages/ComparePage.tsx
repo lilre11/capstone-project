@@ -14,7 +14,7 @@ const CRITERIA_LABELS: Record<string, string> = {
   screen_ratio: 'Screen',
 };
 
-const BAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981'];
+const BAR_COLORS = ['#06b6d4', '#22d3ee', '#0891b2'];
 
 interface Props {
   rankingData: RankingResponse | null;
@@ -26,7 +26,7 @@ export default function ComparePage({ rankingData }: Props) {
       <div className="page-header">
         <h1>No Data</h1>
         <p>Run an analysis first.</p>
-        <Link to="/preferences" className="btn btn-primary" style={{ marginTop: 24 }}>Go to Preferences</Link>
+        <Link to="/preferences" className="btn btn-primary mt-xl">Go to Preferences</Link>
       </div>
     );
   }
@@ -51,23 +51,23 @@ export default function ComparePage({ rankingData }: Props) {
         {top3.map((r, i) => (
           <motion.div
             key={r.id}
-            className={`glass-card compare-card${i === 0 ? ' winner' : ''}`}
+            className={`card compare-card${i === 0 ? ' winner' : ''}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.15 }}
           >
-            {i === 0 && <div className="compare-winner-badge">🏆 Best Match</div>}
+            {i === 0 && <div className="compare-winner-badge">Best Match</div>}
             <div className="compare-rank gradient-text">#{r.rank}</div>
             <div className="compare-phone-name">{r.model_name}</div>
             <div className="compare-brand">{r.brand}</div>
             <div className="compare-score">{r.score.toFixed(1)}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>/ 100</div>
+            <div className="compare-score-label">/ 100</div>
           </motion.div>
         ))}
       </div>
 
       {/* Criteria comparison */}
-      <div className="glass-card-static" style={{ padding: 'var(--space-lg)', marginBottom: 'var(--space-xl)' }}>
+      <div className="card-static compare-criteria-wrapper">
         <table className="compare-criteria-table">
           <thead>
             <tr>
@@ -92,7 +92,7 @@ export default function ComparePage({ rankingData }: Props) {
                       className={v === maxVal && maxVal > 0 ? 'winner-cell' : ''}
                     >
                       {v.toFixed(4)}
-                      {v === maxVal && maxVal > 0 && ' ✓'}
+                      {v === maxVal && maxVal > 0 && ' *'}
                     </td>
                   ))}
                 </tr>
@@ -103,8 +103,8 @@ export default function ComparePage({ rankingData }: Props) {
       </div>
 
       {/* Bar chart */}
-      <div className="glass-card-static compare-chart-container">
-        <h4 style={{ textAlign: 'center', marginBottom: 16 }}>Overall Score Comparison</h4>
+      <div className="card-static compare-chart-container">
+        <h4 className="compare-chart-title">Overall Score Comparison</h4>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={chartData} barSize={50}>
             <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12 }} />
@@ -121,9 +121,9 @@ export default function ComparePage({ rankingData }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <div className="result-actions" style={{ marginTop: 32 }}>
-        <Link to="/results" className="btn btn-secondary">← Back to Result</Link>
-        <Link to="/explain" className="btn btn-primary">🤖 AI Explanation</Link>
+      <div className="action-row">
+        <Link to="/results" className="btn btn-secondary">Back to Result</Link>
+        <Link to="/explain" className="btn btn-primary">AI Explanation</Link>
       </div>
     </motion.div>
   );

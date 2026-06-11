@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { RankingResponse } from '../types';
 
-function rankMedalClass(rank: number) {
-  if (rank === 1) return 'rank-medal rank-gold';
-  if (rank === 2) return 'rank-medal rank-silver';
-  if (rank === 3) return 'rank-medal rank-bronze';
-  return 'rank-medal rank-default';
+function rankBadgeClass(rank: number) {
+  if (rank === 1) return 'rank-badge rank-gold';
+  if (rank === 2) return 'rank-badge rank-silver';
+  if (rank === 3) return 'rank-badge rank-bronze';
+  return 'rank-badge rank-default';
 }
 
 interface Props {
@@ -19,7 +19,7 @@ export default function RankingsPage({ rankingData }: Props) {
       <div className="page-header">
         <h1>No Rankings</h1>
         <p>Run an analysis first.</p>
-        <Link to="/preferences" className="btn btn-primary" style={{ marginTop: 24 }}>Go to Preferences</Link>
+        <Link to="/preferences" className="btn btn-primary mt-xl">Go to Preferences</Link>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default function RankingsPage({ rankingData }: Props) {
         <p>All 10 smartphones ranked by the TOPSIS closeness coefficient.</p>
       </div>
 
-      <div className="glass-card-static rankings-table-container">
+      <div className="card-static rankings-table-container">
         <table className="rankings-table">
           <thead>
             <tr>
@@ -52,13 +52,13 @@ export default function RankingsPage({ rankingData }: Props) {
                 transition={{ delay: i * 0.06 }}
               >
                 <td>
-                  <span className={rankMedalClass(r.rank)}>
-                    {r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}
+                  <span className={rankBadgeClass(r.rank)}>
+                    {r.rank}
                   </span>
                 </td>
-                <td style={{ fontWeight: 600 }}>{r.model_name}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{r.brand}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                <td className="text-sm" style={{ fontWeight: 600 }}>{r.model_name}</td>
+                <td className="text-secondary text-sm">{r.brand}</td>
+                <td className="font-mono text-secondary text-sm">
                   {r.closeness_coefficient.toFixed(4)}
                 </td>
                 <td className="score-bar-cell">
@@ -75,10 +75,10 @@ export default function RankingsPage({ rankingData }: Props) {
         </table>
       </div>
 
-      <div className="result-actions" style={{ marginTop: 32 }}>
-        <Link to="/results" className="btn btn-secondary">← Back to Result</Link>
-        <Link to="/compare" className="btn btn-secondary">📊 Compare Top 3</Link>
-        <Link to="/explain" className="btn btn-primary">🤖 AI Explanation</Link>
+      <div className="action-row">
+        <Link to="/results" className="btn btn-secondary">Back to Result</Link>
+        <Link to="/compare" className="btn btn-secondary">Compare Top 3</Link>
+        <Link to="/explain" className="btn btn-primary">AI Explanation</Link>
       </div>
     </motion.div>
   );

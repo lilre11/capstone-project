@@ -102,7 +102,7 @@ export default function ExplainPage({ rankingData }: Props) {
       <div className="page-header">
         <h1>No Results</h1>
         <p>Run an analysis first to get AI explanations.</p>
-        <Link to="/preferences" className="btn btn-primary" style={{ marginTop: 24 }}>Go to Preferences</Link>
+        <Link to="/preferences" className="btn btn-primary mt-xl">Go to Preferences</Link>
       </div>
     );
   }
@@ -140,14 +140,14 @@ export default function ExplainPage({ rankingData }: Props) {
         {messages.map((msg, i) => (
           <div key={i} className={`chat-bubble chat-bubble-${msg.role === 'assistant' ? 'ai' : 'user'}`}>
             <span className="chat-bubble-label">
-              {msg.role === 'assistant' ? '🤖 AI Explainer' : '👤 You'}
+              {msg.role === 'assistant' ? 'SmartPick AI' : 'You'}
             </span>
             <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         ))}
         {loading && (
           <div className="typing-indicator">
-            <span /><span /><span />
+            <div className="typing-indicator-bar" />
           </div>
         )}
         <div ref={bottomRef} />
