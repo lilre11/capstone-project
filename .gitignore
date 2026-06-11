@@ -21,9 +21,7 @@ env/
 .ipynb_checkpoints/
 
 # Generated training checkpoints and exports
-computer_vision/training_artifacts/**/*.onnx
-computer_vision/training_artifacts/**/*.pt
-computer_vision/training_artifacts/**/weights/
+
 
 # Local runtime output
 /.tmp-*
@@ -31,3 +29,5 @@ computer_vision/training_artifacts/**/weights/
 superpowers/
 docs/superpowers/specs/
 tools/
+
+examples/

@@ -35,7 +35,7 @@ Rules you MUST follow:
 def _build_catalog_context(phone_specs: List[Dict[str, Any]]) -> str:
     lines = ["## Smartphone Catalog"]
     for phone in phone_specs:
-        lines.append(f"### {phone.get('brand', '')} {phone.get('model_name', '')}".strip())
+        lines.append(f"### {phone.get('model_name', '')}".strip())
         specs = phone.get("specs", phone)
         for key, value in specs.items():
             if key not in {"id", "model_name", "brand", "image_url", "supported_by_cv"}:
@@ -60,7 +60,7 @@ def _build_ranking_context(ranking_data: Optional[Dict[str, Any]]) -> str:
     lines.append("### Rankings")
     for item in ranking_data.get("rankings", []):
         lines.append(
-            f"- Rank {item['rank']}: {item['brand']} {item['model_name']} "
+            f"- Rank {item['rank']}: {item['model_name']} "
             f"(score={item['score']}, closeness={item['closeness_coefficient']})"
         )
 
