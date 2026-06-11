@@ -40,6 +40,9 @@ If `OPENROUTER_API_KEY` is missing, the app falls back to local explanation temp
 From the project root:
 
 ```bash
+python -m venv .venv
+.\.venv\Scripts\activate
+
 npm run install:all
 ```
 
