@@ -2,16 +2,16 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: 'easeOut' as const },
+    transition: { delay: i * 0.12, duration: 0.5, ease: 'easeOut' as const },
   }),
 };
 
 const features = [
-  { title: 'YOLOv8 Detection', desc: 'Upload a photo and our YOLO model identifies the smartphone model instantly.' },
+  { title: 'AI Detection', desc: 'Upload a photo and our YOLO model identifies the smartphone model instantly.' },
   { title: 'TOPSIS Ranking', desc: 'AHP weights your priorities, TOPSIS ranks phones against the ideal solution.' },
   { title: 'LLM Explainer', desc: 'Ask the AI why a phone was recommended and get plain-language answers.' },
 ];
@@ -19,16 +19,6 @@ const features = [
 export default function LandingPage() {
   return (
     <section className="landing-hero">
-      <motion.div
-        className="badge badge-primary"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        style={{ marginBottom: 24 }}
-      >
-        AI-Powered Decision Support
-      </motion.div>
-
       <motion.h1
         custom={0}
         initial="hidden"
@@ -58,10 +48,10 @@ export default function LandingPage() {
         animate="visible"
         variants={fadeUp}
       >
-        <Link to="/preferences" className="btn btn-primary btn-lg" id="cta-start">
+        <Link to="/preferences" className="btn btn-primary" id="cta-start">
           Start Analysis
         </Link>
-        <Link to="/identify" className="btn btn-secondary btn-lg" id="cta-identify">
+        <Link to="/identify" className="btn btn-secondary" id="cta-identify">
           Identify Device
         </Link>
       </motion.div>
@@ -76,7 +66,7 @@ export default function LandingPage() {
         {features.map((f) => (
           <div key={f.title} className="card landing-feature-card">
             <div className="feature-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
