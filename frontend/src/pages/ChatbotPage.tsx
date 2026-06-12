@@ -23,19 +23,19 @@ const RANKING_PROMPTS = [
 ];
 
 const MODEL_LABELS: Record<string, string> = {
-  'openrouter/free': 'Auto (Free Router)',
-  'google/gemma-4-31b-it:free': 'Gemma 4 31B',
-  'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
-  'openai/gpt-oss-120b:free': 'GPT OSS 120B',
-  'qwen/qwen3-next-80b-a3b-instruct:free': 'Qwen3 Next 80B',
+  'openrouter/free': 'OpenRouter (Auto)',
+  'llama-3.3-70b-versatile': 'Groq Llama 3.3 70B',
+  'llama-3.1-8b-instant': 'Groq Llama 3.1 8B',
+  'meta-llama/llama-4-scout-17b-16e-instruct': 'Groq Llama 4 Scout 17B',
+  'qwen/qwen3-32b': 'Groq Qwen3 32B',
 };
 
 const CHAT_MODELS = [
-  { value: 'openrouter/free', label: 'Auto (Free Router)' },
-  { value: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B' },
-  { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B' },
-  { value: 'openai/gpt-oss-120b:free', label: 'GPT OSS 120B' },
-  { value: 'qwen/qwen3-next-80b-a3b-instruct:free', label: 'Qwen3 Next 80B' },
+  { value: 'openrouter/free', label: 'OpenRouter (Auto)' },
+  { value: 'llama-3.3-70b-versatile', label: 'Groq Llama 3.3 70B' },
+  { value: 'llama-3.1-8b-instant', label: 'Groq Llama 3.1 8B' },
+  { value: 'meta-llama/llama-4-scout-17b-16e-instruct', label: 'Groq Llama 4 Scout 17B' },
+  { value: 'qwen/qwen3-32b', label: 'Groq Qwen3 32B' },
 ];
 
 export default function ChatbotPage({ rankingData }: Props) {
@@ -74,11 +74,9 @@ export default function ChatbotPage({ rankingData }: Props) {
         nextHistory,
         selectedModel,
       );
-      const modelLabel = MODEL_LABELS[response.model_used] || response.model_used;
-      const replyLabel = response.model_used === 'template_fallback'
-        ? response.answer
-        : `[${modelLabel}]\n\n${response.answer}`;
-      setMessages((prev) => [...prev, { role: 'assistant', content: replyLabel }]);
+      const modelUsed = response.model_used === 'template_fallback' ? undefined : response.model_used;
+      const content = response.answer;
+      setMessages((prev) => [...prev, { role: 'assistant', content, model_used: modelUsed }]);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -117,7 +115,7 @@ export default function ChatbotPage({ rankingData }: Props) {
       <div className="chatbot-shell card-static">
         <div className="chatbot-toolbar">
           <label className="chatbot-model-picker">
-            <span className="chatbot-model-label">Free model</span>
+            <span className="chatbot-model-label">Chat model</span>
             <select
               className="chatbot-model-select"
               value={selectedModel}
@@ -155,6 +153,11 @@ export default function ChatbotPage({ rankingData }: Props) {
             >
               <span className="chat-bubble-label">
                 {msg.role === 'assistant' ? 'SmartPick AI' : 'You'}
+                {msg.model_used && (
+                  <span className="chat-bubble-model">
+                    {MODEL_LABELS[msg.model_used] || msg.model_used}
+                  </span>
+                )}
               </span>
               <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>

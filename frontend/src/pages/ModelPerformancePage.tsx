@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getArtifacts } from '../api/client';
 import type { ArtifactsResponse } from '../api/client';
 
 const MODEL_LABELS: Record<string, string> = {
-  model_1: 'Model 1 (yolo11n, 1024px)',
-  model_2: 'Model 2 (yolo11s, 640px)',
-  model_3: 'Model 3 (yolo11s, 640px, cos_lr)',
+  model_1: 'YOLO11n (1024px)',
+  model_2: 'YOLO11s (640px)',
+  model_3: 'YOLO11s (640px, cos_lr)',
+};
+
+const MODEL_DESCRIPTIONS: Record<string, string> = {
+  model_1: 'Nano variant — fast inference, lower accuracy',
+  model_2: 'Small variant — balanced speed and accuracy',
+  model_3: 'Small variant with cosine LR scheduler',
 };
 
 const GALLERY_LABELS: Record<string, string> = {
@@ -67,87 +73,117 @@ export default function ModelPerformancePage() {
         <p>Training metrics and visualizations for all YOLO models.</p>
       </div>
 
-      <div className="model-selector card">
-        <span className="model-label">Model</span>
-        <select
-          className="model-select"
-          value={activeModel}
-          onChange={(e) => { setActiveModel(e.target.value); setSelectedImage(null); }}
-        >
+      <div className="model-picker card">
+        <span className="model-picker-label">Select Model</span>
+        <div className="model-picker-options">
           {modelList.map((name) => (
-            <option key={name} value={name}>
-              {MODEL_LABELS[name] || name}
-            </option>
+            <button
+              key={name}
+              className={`model-picker-btn${activeModel === name ? ' active' : ''}`}
+              onClick={() => { setActiveModel(name); setSelectedImage(null); }}
+            >
+              <span className="model-picker-btn-label">{MODEL_LABELS[name] || name}</span>
+              <span className="model-picker-btn-desc">{MODEL_DESCRIPTIONS[name] || ''}</span>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
       {parsed && (
         <div className="metrics-grid">
-          {Object.entries(parsed).map(([label, value]) => (
-            <div key={label} className="card metric-card">
+          {Object.entries(parsed).map(([label, value], i) => (
+            <motion.div
+              key={label}
+              className="metric-card"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.3 }}
+            >
               <div className="metric-value gradient-text">{value}</div>
               <div className="metric-label">{label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
 
       {active && active.images.length > 0 && (
-        <div className="gallery-grid">
-          {active.images.map((img) => {
-            const baseKey =
-              img.replace('.png', '').replace('.jpg', '').replace('.jpeg', '');
-            const label =
-              GALLERY_LABELS[baseKey] ||
-              baseKey.replace(/_/g, ' ');
-            const imgUrl =
-              activeModel === 'model_3'
-                ? `http://localhost:8000/artifacts/model_3/runs/${img}`
-                : `http://localhost:8000/artifacts/${activeModel}/${img}`;
+        <>
+          <h3 className="section-subtitle">Visualizations</h3>
+          <div className="gallery-grid">
+            {active.images.map((img) => {
+              const baseKey =
+                img.replace('.png', '').replace('.jpg', '').replace('.jpeg', '');
+              const label =
+                GALLERY_LABELS[baseKey] ||
+                baseKey.replace(/_/g, ' ');
+              const imgUrl =
+                activeModel === 'model_3'
+                  ? `http://localhost:8000/artifacts/model_3/runs/${img}`
+                  : `http://localhost:8000/artifacts/${activeModel}/${img}`;
 
-            return (
-              <motion.div
-                key={img}
-                className="card gallery-card"
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setSelectedImage(imgUrl)}
-              >
-                <img
-                  src={imgUrl}
-                  alt={label}
-                  className="gallery-thumb"
-                  loading="lazy"
-                />
-                <div className="gallery-label">{label}</div>
-              </motion.div>
-            );
-          })}
-        </div>
+              return (
+                <motion.div
+                  key={img}
+                  className="gallery-card"
+                  layout
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35 }}
+                  onClick={() => setSelectedImage(imgUrl)}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={label}
+                    className="gallery-thumb"
+                    loading="lazy"
+                  />
+                  <div className="gallery-label">{label}</div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {!active && (
-        <div className="card" style={{ padding: '32px', textAlign: 'center' }}>
-          <p>No artifacts found for this model.</p>
-        </div>
+        <motion.div
+          className="card-static"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{ padding: '48px 32px', textAlign: 'center' }}
+        >
+          <p style={{ color: 'var(--ink-muted)' }}>No training artifacts found for this model.</p>
+        </motion.div>
       )}
 
-      {selectedImage && (
-        <div
-          className="lightbox-overlay"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <img src={selectedImage} alt="Full size" className="lightbox-img" />
-            <button
-              className="lightbox-close"
-              onClick={() => setSelectedImage(null)}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            className="lightbox-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div
+              className="lightbox-content"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+              <img src={selectedImage} alt="Full size" className="lightbox-img" />
+              <button
+                className="lightbox-close"
+                onClick={() => setSelectedImage(null)}
+              >
+                Close ✕
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

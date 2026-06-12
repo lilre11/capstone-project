@@ -15,10 +15,11 @@ GET  /api/artifacts         – List training artifacts
 from __future__ import annotations
 
 import csv
+import json
 import logging
 import uuid
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
@@ -53,33 +54,58 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["Decision Support"])
 
 
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+_DEFAULT_SCORES_CACHE: Optional[Dict[str, float]] = None
+
+
+def _build_default_scores(db: Session) -> Dict[str, float]:
+    """Pre-compute a default balanced-weights TOPSIS score for every phone."""
+    phones = db.query(Smartphone).all()
+    if not phones:
+        return {}
+    phone_dicts = [p.to_criteria_dict() for p in phones]
+    balanced_prefs = {c: 0.5 for c in CRITERIA_ORDER}
+    weights = get_weights(balanced_prefs, method="slider")
+    result = rank_smartphones(phone_dicts, weights)
+    scores: Dict[str, float] = {}
+    for entry in result["rankings"]:
+        scores[entry["id"]] = entry["score"]
+    return scores
+
+
+def _phone_to_response(p: Smartphone, scores: Dict[str, float]) -> SmartphoneResponse:
+    """Convert an ORM Smartphone to a Pydantic SmartphoneResponse."""
+    return SmartphoneResponse(
+        id=p.id,
+        brand=p.brand,
+        model_name=p.model_name,
+        image_url=p.image_url or "",
+        supported_by_cv=p.supported_by_cv,
+        tech_specs=json.loads(p.tech_specs) if p.tech_specs else {},
+        default_score=scores.get(p.id),
+        specs=SmartphoneSpecs(
+            price=p.price,
+            battery_mah=p.battery_mah,
+            camera_score=p.camera_score,
+            antutu_score=p.antutu_score,
+            storage_gb=p.storage_gb,
+            weight_g=p.weight_g,
+            charging_watts=p.charging_watts,
+            screen_ratio=p.screen_ratio,
+        ),
+    )
+
+
 # ── Smartphones ──────────────────────────────────────────────────────────────
 
 @router.get("/smartphones", response_model=SmartphoneListResponse)
 def list_smartphones(db: Session = Depends(get_db)):
     """Return all smartphones in the database."""
     phones = db.query(Smartphone).all()
+    scores = _build_default_scores(db)
     return SmartphoneListResponse(
-        smartphones=[
-            SmartphoneResponse(
-                id=p.id,
-                brand=p.brand,
-                model_name=p.model_name,
-                image_url=p.image_url or "",
-                supported_by_cv=p.supported_by_cv,
-                specs=SmartphoneSpecs(
-                    price=p.price,
-                    battery_mah=p.battery_mah,
-                    camera_score=p.camera_score,
-                    antutu_score=p.antutu_score,
-                    storage_gb=p.storage_gb,
-                    weight_g=p.weight_g,
-                    charging_watts=p.charging_watts,
-                    screen_ratio=p.screen_ratio,
-                ),
-            )
-            for p in phones
-        ]
+        smartphones=[_phone_to_response(p, scores) for p in phones]
     )
 
 
@@ -89,23 +115,8 @@ def get_smartphone(phone_id: str, db: Session = Depends(get_db)):
     phone = db.query(Smartphone).filter_by(id=phone_id).first()
     if phone is None:
         raise HTTPException(status_code=404, detail=f"Smartphone '{phone_id}' not found.")
-    return SmartphoneResponse(
-        id=phone.id,
-        brand=phone.brand,
-        model_name=phone.model_name,
-        image_url=phone.image_url or "",
-        supported_by_cv=phone.supported_by_cv,
-        specs=SmartphoneSpecs(
-            price=phone.price,
-            battery_mah=phone.battery_mah,
-            camera_score=phone.camera_score,
-            antutu_score=phone.antutu_score,
-            storage_gb=phone.storage_gb,
-            weight_g=phone.weight_g,
-            charging_watts=phone.charging_watts,
-            screen_ratio=phone.screen_ratio,
-        ),
-    )
+    scores = _build_default_scores(db)
+    return _phone_to_response(phone, scores)
 
 
 # ── Criteria ─────────────────────────────────────────────────────────────────

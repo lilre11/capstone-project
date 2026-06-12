@@ -79,6 +79,7 @@ def seed_smartphones(db: Session, data: List[Dict[str, Any]] | None = None) -> N
             model_name=phone_data["model_name"],
             image_url=phone_data.get("image_url", ""),
             supported_by_cv=phone_data.get("supported_by_cv", True),
+            tech_specs=json.dumps(phone_data.get("tech_specs", {})),
             price=phone_data["price"],
             battery_mah=phone_data["battery_mah"],
             camera_score=phone_data["camera_score"],
