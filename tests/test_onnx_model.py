@@ -5,7 +5,7 @@ from src.onnx_model import ONNXModel
 
 
 def test_onnx_model_predict_small():
-    model_path = os.path.join("models", "onnx", "best.onnx")
+    model_path = os.path.join("computer_vision", "models", "onnx", "model_3.onnx")
     assert os.path.exists(model_path), f"Model not found at {model_path}"
 
     model = ONNXModel.load(model_path)

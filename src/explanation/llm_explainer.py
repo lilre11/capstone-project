@@ -23,13 +23,11 @@ logger = logging.getLogger(__name__)
 
 _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Free models on OpenRouter (fallback order)
+# OpenRouter's free router automatically selects a currently available free model.
 _FREE_MODELS = [
-    "google/gemini-2.0-flash-exp:free",
-    "meta-llama/llama-4-maverick:free",
-    "deepseek/deepseek-chat-v3-0324:free",
-    "qwen/qwen3-8b:free",
+    "openrouter/free",
 ]
+DEFAULT_EXPLAIN_MODEL = _FREE_MODELS[0]
 
 SYSTEM_PROMPT = """\
 You are an AI smartphone recommendation assistant integrated into a \
@@ -131,6 +129,7 @@ async def explain(
     ranking_data: Dict[str, Any],
     phone_specs: Optional[List[Dict]] = None,
     conversation_history: Optional[List[Dict[str, str]]] = None,
+    model_id: str = DEFAULT_EXPLAIN_MODEL,
 ) -> str:
     """Generate an LLM explanation for the ranking result.
 
@@ -168,37 +167,30 @@ async def explain(
 
     messages.append({"role": "user", "content": question})
 
-    # Try models in order until one succeeds
-    last_error = None
-    for model_id in _FREE_MODELS:
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    _OPENROUTER_URL,
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "http://localhost:5173",
-                        "X-Title": "Smartphone Decision Support System",
-                    },
-                    json={
-                        "model": model_id,
-                        "messages": messages,
-                        "max_tokens": 1024,
-                        "temperature": 0.7,
-                    },
-                )
-                response.raise_for_status()
-                data = response.json()
-                content = data["choices"][0]["message"]["content"]
-                return content.strip()
-        except Exception as e:
-            last_error = e
-            logger.warning("OpenRouter model %s failed: %s", model_id, e)
-            continue
-
-    logger.error("All OpenRouter models failed. Last error: %s", last_error)
-    return explain_fallback(question, ranking_data)
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                _OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:5173",
+                    "X-Title": "Smartphone Decision Support System",
+                },
+                json={
+                    "model": model_id,
+                    "messages": messages,
+                    "max_tokens": 1024,
+                    "temperature": 0.7,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            content = data["choices"][0]["message"]["content"]
+            return content.strip()
+    except Exception as e:
+        logger.warning("OpenRouter model %s failed: %s", model_id, e)
+        return explain_fallback(question, ranking_data)
 
 
 def explain_fallback(

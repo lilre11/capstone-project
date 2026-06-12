@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { submitPreferences, runRanking } from '../api/client';
-import type { RankingResponse } from '../types';
+import type { PreferencesRequest, RankingResponse } from '../types';
+
+type PreferenceKey = keyof PreferencesRequest;
 
 const CRITERIA = [
-  { key: 'price', label: 'Price Sensitivity', icon: '💰', desc: 'How important is a lower price?' },
-  { key: 'battery', label: 'Battery Life', icon: '🔋', desc: 'Long-lasting battery matters?' },
-  { key: 'camera', label: 'Camera Quality', icon: '📸', desc: 'Photo and video performance' },
-  { key: 'antutu', label: 'Performance', icon: '⚡', desc: 'Raw processing power (AnTuTu)' },
-  { key: 'storage', label: 'Storage Capacity', icon: '💾', desc: 'How much storage do you need?' },
-  { key: 'weight', label: 'Lightweight', icon: '🪶', desc: 'Prefer a lighter phone?' },
-  { key: 'charging', label: 'Charging Speed', icon: '🔌', desc: 'Fast charging capability' },
-  { key: 'screen_ratio', label: 'Screen Size', icon: '📱', desc: 'Edge-to-edge display ratio' },
-];
+  { key: 'price', label: 'Price Sensitivity', desc: 'How important is a lower price?' },
+  { key: 'battery', label: 'Battery Life', desc: 'Long-lasting battery matters?' },
+  { key: 'camera', label: 'Camera Quality', desc: 'Photo and video performance' },
+  { key: 'antutu', label: 'Performance', desc: 'Raw processing power (AnTuTu)' },
+  { key: 'storage', label: 'Storage Capacity', desc: 'How much storage do you need?' },
+  { key: 'weight', label: 'Lightweight', desc: 'Prefer a lighter phone?' },
+  { key: 'charging', label: 'Charging Speed', desc: 'Fast charging capability' },
+  { key: 'screen_ratio', label: 'Screen Size', desc: 'Edge-to-edge display ratio' },
+] satisfies Array<{ key: PreferenceKey; label: string; desc: string }>;
 
 const PRESETS: Record<string, Record<string, number>> = {
   balanced: { price: 50, battery: 50, camera: 50, antutu: 50, storage: 50, weight: 50, charging: 50, screen_ratio: 50 },
@@ -24,15 +26,15 @@ const PRESETS: Record<string, Record<string, number>> = {
   battery_champion: { price: 40, battery: 100, camera: 40, antutu: 30, storage: 40, weight: 30, charging: 80, screen_ratio: 30 },
 };
 
-const PRESET_LABELS: Record<string, { label: string; icon: string }> = {
-  balanced: { label: 'Balanced', icon: '⚖️' },
-  camera_lover: { label: 'Camera Lover', icon: '📸' },
-  budget: { label: 'Budget Conscious', icon: '💰' },
-  performance: { label: 'Performance First', icon: '🚀' },
-  battery_champion: { label: 'Battery Champion', icon: '🔋' },
+const PRESET_LABELS: Record<string, string> = {
+  balanced: 'Balanced',
+  camera_lover: 'Camera Lover',
+  budget: 'Budget Conscious',
+  performance: 'Performance First',
+  battery_champion: 'Battery Champion',
 };
 
-const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#84cc16'];
+const PIE_COLORS = ['#06b6d4', '#22d3ee', '#0891b2', '#0e7490', '#10b981', '#34d399', '#f59e0b', '#ef4444'];
 
 interface Props {
   onRankingComplete: (data: RankingResponse) => void;
@@ -64,9 +66,18 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
     setLoading(true);
     setError('');
     try {
-      const normalized: Record<string, number> = {};
+      const normalized: PreferencesRequest = {
+        price: 0.5,
+        battery: 0.5,
+        camera: 0.5,
+        antutu: 0.5,
+        storage: 0.5,
+        weight: 0.5,
+        charging: 0.5,
+        screen_ratio: 0.5,
+      };
       CRITERIA.forEach((c) => { normalized[c.key] = (values[c.key] || 50) / 100; });
-      const { weights } = await submitPreferences(normalized as any);
+      const { weights } = await submitPreferences(normalized);
       const ranking = await runRanking(weights);
       onRankingComplete(ranking);
       navigate('/results');
@@ -88,9 +99,9 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
         {/* Sliders panel */}
         <div className="sliders-panel">
           {CRITERIA.map((c) => (
-            <div key={c.key} className="glass-card slider-card">
+            <div key={c.key} className="card slider-card">
               <div className="slider-header">
-                <span className="slider-label">{c.icon} {c.label}</span>
+                <span className="slider-label">{c.label}</span>
                 <span className="slider-value">{values[c.key]}</span>
               </div>
               <input
@@ -111,23 +122,23 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
 
         {/* Presets & chart panel */}
         <div className="presets-panel">
-          <div className="glass-card-static presets-section">
+          <div className="card-static presets-section">
             <h4>Quick Presets</h4>
             <div className="preset-buttons">
-              {Object.entries(PRESET_LABELS).map(([key, { label, icon }]) => (
+              {Object.entries(PRESET_LABELS).map(([key, label]) => (
                 <button
                   key={key}
                   className={`preset-btn${activePreset === key ? ' active' : ''}`}
                   onClick={() => applyPreset(key)}
                   id={`preset-${key}`}
                 >
-                  {icon} {label}
+                  {label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="glass-card-static weight-chart-container">
+          <div className="card-static weight-chart-container">
             <h4>Weight Distribution</h4>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -143,7 +154,7 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
             </ResponsiveContainer>
           </div>
 
-          <div className="glass-card-static run-analysis-container">
+          <div className="card-static run-analysis-container">
             <button
               className="btn btn-primary btn-lg"
               onClick={handleRun}
@@ -151,12 +162,12 @@ export default function PreferencesPage({ onRankingComplete }: Props) {
               id="btn-run-analysis"
             >
               {loading ? (
-                <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing...</>
+                <><span className="spinner spinner-inline" /> Analyzing...</>
               ) : (
-                '🚀 Run Analysis'
+                'Run Analysis'
               )}
             </button>
-            {error && <div className="error-message" style={{ marginTop: 12 }}>{error}</div>}
+            {error && <div className="error-message mt-lg">{error}</div>}
           </div>
         </div>
       </div>

@@ -82,3 +82,119 @@ def test_full_rest_api_flow():
         assert "answer" in explanation_data
         assert "model_used" in explanation_data
         assert len(explanation_data["answer"]) > 0
+
+
+def test_chat_endpoint_with_ranking_context(monkeypatch):
+    from src.explanation import chatbot
+
+    async def fake_answer_chat(**kwargs):
+        ranking_data = kwargs.get("ranking_data")
+        model_id = kwargs.get("model_id")
+        assert ranking_data is not None
+        assert ranking_data["rankings"][0]["rank"] == 1
+        assert model_id == "openrouter/free"
+        return "Ranking-aware answer"
+
+    monkeypatch.setattr(chatbot, "answer_chat", fake_answer_chat)
+
+    with TestClient(app) as client:
+        rank_response = client.post("/api/rank", json={})
+        assert rank_response.status_code == 200
+        ranking_id = rank_response.json()["ranking_id"]
+
+        response = client.post(
+            "/api/chat",
+            json={
+                "question": "Why did the top phone win?",
+                "ranking_id": ranking_id,
+                "conversation_history": [],
+                "model": "openrouter/free",
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"] == "Ranking-aware answer"
+    assert payload["model_used"] == "openrouter/free"
+
+
+def test_chat_endpoint_without_ranking_context(monkeypatch):
+    from src.explanation import chatbot
+
+    async def fake_answer_chat(**kwargs):
+        ranking_data = kwargs.get("ranking_data")
+        phone_specs = kwargs.get("phone_specs")
+        model_id = kwargs.get("model_id")
+        assert ranking_data is None
+        assert isinstance(phone_specs, list)
+        assert len(phone_specs) == 10
+        assert model_id == "meta-llama/llama-3.3-70b-instruct:free"
+        return "General answer"
+
+    monkeypatch.setattr(chatbot, "answer_chat", fake_answer_chat)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "question": "What kind of phone should I buy for battery life?",
+                "conversation_history": [],
+                "model": "meta-llama/llama-3.3-70b-instruct:free",
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"] == "General answer"
+    assert payload["model_used"] == "meta-llama/llama-3.3-70b-instruct:free"
+
+
+def test_chat_endpoint_unknown_ranking_id_returns_404():
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "question": "Explain this result",
+                "ranking_id": "missing-id",
+                "conversation_history": [],
+            },
+        )
+
+    assert response.status_code == 404
+
+
+def test_chat_endpoint_invalid_model_returns_400():
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "question": "Explain this result",
+                "model": "not-a-real-model",
+                "conversation_history": [],
+            },
+        )
+
+    assert response.status_code == 400
+
+
+def test_chat_endpoint_returns_fallback_when_chatbot_service_fails(monkeypatch):
+    from src.explanation import chatbot
+
+    async def fake_answer_chat(**kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(chatbot, "answer_chat", fake_answer_chat)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "question": "Compare the top phones",
+                "conversation_history": [],
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["model_used"] == "template_fallback"
+    assert "smartphone" in payload["answer"].lower() or "analysis" in payload["answer"].lower()

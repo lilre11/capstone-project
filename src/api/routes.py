@@ -9,18 +9,24 @@ POST /api/preferences       – Submit preference sliders → AHP weights
 POST /api/rank              – Run TOPSIS ranking
 GET  /api/rank/{id}         – Retrieve a saved ranking
 POST /api/explain           – Ask AI to explain a ranking
+GET  /api/artifacts         – List training artifacts
 """
 
 from __future__ import annotations
 
+import csv
 import logging
 import uuid
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.api.schemas import (
+    ChatRequest,
+    ChatResponse,
     CriteriaListResponse,
     CriterionResponse,
     ExplainRequest,
@@ -39,6 +45,7 @@ from src.database.database import get_db
 from src.database.models import Criterion, RankingResult, Smartphone
 from src.decision_engine.ahp import get_weights, CRITERIA_ORDER
 from src.decision_engine.topsis import rank_smartphones
+from src.explanation import chatbot
 from src.explanation.llm_explainer import explain as llm_explain, explain_fallback
 
 logger = logging.getLogger(__name__)
@@ -211,9 +218,47 @@ def get_ranking(ranking_id: str, db: Session = Depends(get_db)):
 
 # ── Explanation ──────────────────────────────────────────────────────────────
 
+@router.post("/chat", response_model=ChatResponse)
+async def chat_with_assistant(body: ChatRequest, db: Session = Depends(get_db)):
+    """Ask the in-app chatbot for general or ranking-aware smartphone guidance."""
+    ranking_data = None
+    selected_model = body.model or chatbot.DEFAULT_CHAT_MODEL
+    if selected_model not in chatbot.CURATED_FREE_CHAT_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid chat model specified.")
+
+    if body.ranking_id:
+        record = db.query(RankingResult).filter_by(id=body.ranking_id).first()
+        if record is None:
+            raise HTTPException(status_code=404, detail=f"Ranking '{body.ranking_id}' not found.")
+        ranking_data = record.get_results()
+
+    phones = db.query(Smartphone).all()
+    phone_specs = [p.to_display_dict() for p in phones]
+
+    try:
+        answer = await chatbot.answer_chat(
+            question=body.question,
+            ranking_data=ranking_data,
+            phone_specs=phone_specs,
+            conversation_history=body.conversation_history,
+            model_id=selected_model,
+        )
+        model_used = selected_model
+    except Exception:
+        logger.exception("Chatbot failed, using fallback.")
+        answer = chatbot.fallback_chat_answer(body.question, ranking_data)
+        model_used = "template_fallback"
+
+    return ChatResponse(answer=answer, model_used=model_used)
+
+
 @router.post("/explain", response_model=ExplainResponse)
 async def explain_ranking(body: ExplainRequest, db: Session = Depends(get_db)):
     """Ask the AI to explain a ranking result."""
+    selected_model = body.model or chatbot.DEFAULT_CHAT_MODEL
+    if selected_model not in chatbot.CURATED_FREE_CHAT_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid explain model specified.")
+
     record = db.query(RankingResult).filter_by(id=body.ranking_id).first()
     if record is None:
         raise HTTPException(status_code=404, detail=f"Ranking '{body.ranking_id}' not found.")
@@ -230,11 +275,68 @@ async def explain_ranking(body: ExplainRequest, db: Session = Depends(get_db)):
             ranking_data=ranking_data,
             phone_specs=phone_specs,
             conversation_history=body.conversation_history,
+            model_id=selected_model,
         )
-        model_used = "openrouter"
+        model_used = selected_model
     except Exception as e:
         logger.exception("LLM explanation failed, using fallback.")
         answer = explain_fallback(body.question, ranking_data)
         model_used = "template_fallback"
 
     return ExplainResponse(answer=answer, model_used=model_used)
+
+
+# ── Training Artifacts ─────────────────────────────────────────────────────────
+
+ARTIFACT_BASE = Path(__file__).resolve().parents[2] / "computer_vision" / "training_artifacts"
+
+GALLERY_IMAGES = [
+    "confusion_matrix_normalized.png",
+    "BoxPR_curve.png",
+    "BoxF1_curve.png",
+    "BoxP_curve.png",
+    "BoxR_curve.png",
+    "results.png",
+]
+
+MODEL_DIRS = {
+    "model_1": ("model_1", ARTIFACT_BASE / "model_1"),
+    "model_2": ("model_2", ARTIFACT_BASE / "model_2"),
+    "model_3": ("model_3", ARTIFACT_BASE / "model_3" / "runs"),
+}
+
+
+@router.get("/artifacts", tags=["Artifacts"])
+def list_artifacts():
+    models: dict[str, dict] = {}
+    for key, (name, model_dir) in MODEL_DIRS.items():
+        if not model_dir.is_dir():
+            continue
+
+        images: list[str] = []
+        for fname in GALLERY_IMAGES:
+            fp = model_dir / fname
+            if fp.is_file():
+                images.append(fname)
+
+        metrics: dict | None = None
+        csv_path = model_dir / "results.csv"
+        if csv_path.is_file():
+            try:
+                with open(csv_path, newline="") as f:
+                    reader = csv.DictReader(f)
+                    rows = list(reader)
+                    if rows:
+                        raw = rows[-1]
+                        metrics = {
+                            k: round(float(v), 4) if v.replace(".", "", 1).strip("-").isdigit() else v
+                            for k, v in raw.items()
+                        }
+            except Exception:
+                pass
+
+        models[name] = {
+            "images": images,
+            "metrics": metrics,
+        }
+    return models

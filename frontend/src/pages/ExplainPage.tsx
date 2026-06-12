@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 import { askExplanation } from '../api/client';
 import type { ChatMessage, RankingResponse } from '../types';
 
@@ -8,11 +9,28 @@ interface Props {
   rankingData: RankingResponse | null;
 }
 
+const MODEL_LABELS: Record<string, string> = {
+  'openrouter/free': 'Auto (Free Router)',
+  'google/gemma-4-31b-it:free': 'Gemma 4 31B',
+  'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
+  'openai/gpt-oss-120b:free': 'GPT OSS 120B',
+  'qwen/qwen3-next-80b-a3b-instruct:free': 'Qwen3 Next 80B',
+};
+
+const EXPLAIN_MODELS = [
+  { value: 'openrouter/free', label: 'Auto (Free Router)' },
+  { value: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B' },
+  { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B' },
+  { value: 'openai/gpt-oss-120b:free', label: 'GPT OSS 120B' },
+  { value: 'qwen/qwen3-next-80b-a3b-instruct:free', label: 'Qwen3 Next 80B' },
+];
+
 export default function ExplainPage({ rankingData }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('openrouter/free');
+  const initializedRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -22,16 +40,22 @@ export default function ExplainPage({ rankingData }: Props) {
 
   // Send initial greeting
   useEffect(() => {
-    if (!rankingData || initialized) return;
-    setInitialized(true);
+    if (!rankingData || initializedRef.current) return;
+    initializedRef.current = true;
     const sendInitial = async () => {
       setLoading(true);
       try {
         const res = await askExplanation(
           `Briefly explain why ${rankingData.top_match.model_name} was ranked #1 with a score of ${rankingData.top_match.score.toFixed(1)}/100. Mention the top 2-3 factors that contributed most.`,
           rankingData.ranking_id,
+          undefined,
+          selectedModel,
         );
-        setMessages([{ role: 'assistant', content: res.answer }]);
+        const modelLabel = MODEL_LABELS[res.model_used] || res.model_used;
+        const content = res.model_used === 'template_fallback'
+          ? res.answer
+          : `[${modelLabel}]\n\n${res.answer}`;
+        setMessages([{ role: 'assistant', content: content }]);
       } catch {
         setMessages([{
           role: 'assistant',
@@ -42,7 +66,7 @@ export default function ExplainPage({ rankingData }: Props) {
       }
     };
     sendInitial();
-  }, [rankingData, initialized]);
+  }, [rankingData, selectedModel]);
 
   const handleSend = async () => {
     if (!input.trim() || !rankingData || loading) return;
@@ -57,8 +81,12 @@ export default function ExplainPage({ rankingData }: Props) {
         role: m.role,
         content: m.content,
       }));
-      const res = await askExplanation(question, rankingData.ranking_id, history);
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.answer }]);
+      const res = await askExplanation(question, rankingData.ranking_id, history, selectedModel);
+      const modelLabel = MODEL_LABELS[res.model_used] || res.model_used;
+      const content = res.model_used === 'template_fallback'
+        ? res.answer
+        : `[${modelLabel}]\n\n${res.answer}`;
+      setMessages((prev) => [...prev, { role: 'assistant', content: content }]);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -74,7 +102,7 @@ export default function ExplainPage({ rankingData }: Props) {
       <div className="page-header">
         <h1>No Results</h1>
         <p>Run an analysis first to get AI explanations.</p>
-        <Link to="/preferences" className="btn btn-primary" style={{ marginTop: 24 }}>Go to Preferences</Link>
+        <Link to="/preferences" className="btn btn-primary mt-xl">Go to Preferences</Link>
       </div>
     );
   }
@@ -86,19 +114,40 @@ export default function ExplainPage({ rankingData }: Props) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <div className="chatbot-toolbar">
+        <label className="chatbot-model-picker">
+          <span className="chatbot-model-label">Free model</span>
+          <select
+            className="chatbot-model-select"
+            value={selectedModel}
+            onChange={(event) => {
+              initializedRef.current = false;
+              setSelectedModel(event.target.value);
+            }}
+            disabled={loading}
+          >
+            {EXPLAIN_MODELS.map((model) => (
+              <option key={model.value} value={model.value}>
+                {model.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       {/* Messages */}
       <div className="chat-messages">
         {messages.map((msg, i) => (
           <div key={i} className={`chat-bubble chat-bubble-${msg.role === 'assistant' ? 'ai' : 'user'}`}>
             <span className="chat-bubble-label">
-              {msg.role === 'assistant' ? '🤖 AI Explainer' : '👤 You'}
+              {msg.role === 'assistant' ? 'SmartPick AI' : 'You'}
             </span>
-            {msg.content}
+            <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         ))}
         {loading && (
           <div className="typing-indicator">
-            <span /><span /><span />
+            <div className="typing-indicator-bar" />
           </div>
         )}
         <div ref={bottomRef} />

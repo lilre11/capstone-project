@@ -13,7 +13,7 @@ def test_end_to_end_predict():
     os.close(fd)
     try:
         img.save(path, format="JPEG")
-        res = predict_image("models/onnx/best.onnx", path)
+        res = predict_image("computer_vision/models/onnx/model_3.onnx", path)
         assert isinstance(res, dict)
         assert res.get("success") is True
         outputs = res.get("outputs")

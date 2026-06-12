@@ -110,11 +110,39 @@ export interface ExplainResponse {
   model_used: string;
 }
 
+export interface ChatRequest {
+  question: string;
+  ranking_id?: string;
+  conversation_history?: ChatMessage[];
+  model?: string;
+}
+
+export interface ChatResponse {
+  answer: string;
+  model_used: string;
+}
+
 // ── Detection ───────────────────────────────
+
+export interface BBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface Detection {
+  class: string;
+  confidence: number;
+  bbox: BBox;
+}
 
 export interface DetectionResponse {
   detected_object: string;
   model_id: string;
   confidence_score: number;
   action: string;
+  detections: Detection[];
+  image_width: number;
+  image_height: number;
 }

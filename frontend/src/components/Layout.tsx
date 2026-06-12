@@ -8,13 +8,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { to: '/identify', label: 'Identify' },
     { to: '/preferences', label: 'Analyze' },
     { to: '/rankings', label: 'Rankings' },
+    { to: '/model-performance', label: 'Model' },
+    { to: '/chat', label: 'Chatbot' },
   ];
 
   return (
     <>
       <nav className="navbar">
         <Link to="/" className="navbar-brand">
-          <span className="navbar-brand-icon">📱</span>
+          <span className="navbar-brand-icon" />
           SmartPick AI
         </Link>
         <ul className="navbar-links">
@@ -30,7 +32,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </ul>
       </nav>
-      <div className="navbar-gradient-line" />
       <main className="page-wrapper">{children}</main>
       <footer className="footer">
         AI-Powered Smartphone Decision Support System — Capstone Project 2026
