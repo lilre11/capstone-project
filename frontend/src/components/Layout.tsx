@@ -5,6 +5,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const links = [
     { to: '/', label: 'Home' },
+    { to: '/phones', label: 'Smartphones' },
     { to: '/identify', label: 'Identify' },
     { to: '/preferences', label: 'Analyze' },
     { to: '/rankings', label: 'Rankings' },

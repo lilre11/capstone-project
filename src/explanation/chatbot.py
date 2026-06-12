@@ -10,13 +10,19 @@ from src.explanation.llm_explainer import _OPENROUTER_URL
 
 logger = logging.getLogger(__name__)
 
+_GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+GROQ_MODELS: set[str] = {
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "qwen/qwen3-32b",
+}
+
 DEFAULT_CHAT_MODEL = "openrouter/free"
-CURATED_FREE_CHAT_MODELS = [
+CURATED_FREE_CHAT_MODELS: list[str] = [
     DEFAULT_CHAT_MODEL,
-    "google/gemma-4-31b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "openai/gpt-oss-120b:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
+    *GROQ_MODELS,
 ]
 
 CHATBOT_SYSTEM_PROMPT = """\
@@ -78,10 +84,6 @@ async def answer_chat(
     conversation_history: Optional[List[Dict[str, str]]] = None,
     model_id: str = DEFAULT_CHAT_MODEL,
 ) -> str:
-    api_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("OPENROUTER_API_KEY not set")
-
     catalog_context = _build_catalog_context(phone_specs)
     ranking_context = _build_ranking_context(ranking_data)
 
@@ -98,15 +100,22 @@ async def answer_chat(
     if model_id not in CURATED_FREE_CHAT_MODELS:
         raise RuntimeError(f"Unsupported chat model: {model_id}")
 
+    is_groq = model_id in GROQ_MODELS
+    api_key = os.getenv("GROQ_API_KEY" if is_groq else "OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise RuntimeError(f"{'GROQ_API_KEY' if is_groq else 'OPENROUTER_API_KEY'} not set")
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
-                _OPENROUTER_URL,
+                _GROQ_URL if is_groq else _OPENROUTER_URL,
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:5173",
-                    "X-Title": "SmartPick AI Chatbot",
+                    **({} if is_groq else {
+                        "HTTP-Referer": "http://localhost:5173",
+                        "X-Title": "SmartPick AI Chatbot",
+                    }),
                 },
                 json={
                     "model": model_id,

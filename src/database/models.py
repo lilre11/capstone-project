@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -33,6 +33,9 @@ class Smartphone(Base):
     model_name = Column(String, nullable=False)
     image_url = Column(String, default="")
     supported_by_cv = Column(Boolean, default=True)
+
+    # Retail tech specs (JSON string — display-only, not used in TOPSIS)
+    tech_specs = Column(Text, default="{}")
 
     # Raw specification values (denormalised for easy access)
     price = Column(Float, nullable=False, doc="Price in TRY")
@@ -70,6 +73,7 @@ class Smartphone(Base):
             "model_name": self.model_name,
             "image_url": self.image_url or "",
             "supported_by_cv": self.supported_by_cv,
+            "tech_specs": json.loads(self.tech_specs) if self.tech_specs else {},
             "specs": {
                 "price": self.price,
                 "battery_mah": self.battery_mah,

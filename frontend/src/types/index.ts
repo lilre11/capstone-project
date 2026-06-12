@@ -21,6 +21,8 @@ export interface Smartphone {
   model_name: string;
   image_url: string;
   supported_by_cv: boolean;
+  tech_specs: Record<string, string>;
+  default_score?: number;
   specs: SmartphoneSpecs;
 }
 
@@ -97,6 +99,7 @@ export interface RankingResponse {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  model_used?: string;
 }
 
 export interface ExplainRequest {
