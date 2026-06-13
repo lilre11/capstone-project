@@ -12,6 +12,8 @@ import ComparePage from './pages/ComparePage';
 import ExplainPage from './pages/ExplainPage';
 import ChatbotPage from './pages/ChatbotPage';
 import ModelPerformancePage from './pages/ModelPerformancePage';
+import SmartphonesPage from './pages/SmartphonesPage';
+import SmartphoneDetailPage from './pages/SmartphoneDetailPage';
 import type { RankingResponse } from './types';
 
 export default function App() {
@@ -23,6 +25,8 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/phones" element={<SmartphonesPage />} />
+          <Route path="/phones/:id" element={<SmartphoneDetailPage rankingData={rankingData} />} />
           <Route path="/identify" element={<IdentifyPage />} />
           <Route
             path="/preferences"

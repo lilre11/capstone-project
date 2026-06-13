@@ -27,6 +27,8 @@ class SmartphoneResponse(BaseModel):
     model_name: str
     image_url: str = ""
     supported_by_cv: bool = True
+    tech_specs: dict = {}
+    default_score: Optional[float] = None
     specs: SmartphoneSpecs
 
 

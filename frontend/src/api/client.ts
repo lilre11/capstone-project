@@ -4,6 +4,7 @@
 
 import axios from 'axios';
 import type {
+  Smartphone,
   SmartphoneListResponse,
   CriteriaListResponse,
   PreferencesRequest,

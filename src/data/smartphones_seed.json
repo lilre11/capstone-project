@@ -10,7 +10,20 @@
     "storage_gb": 256,
     "weight_g": 233,
     "charging_watts": 40,
-    "screen_ratio": 0.907
+    "screen_ratio": 0.907,
+    "tech_specs": {
+      "display": "6.9\" LTPO Super Retina XDR OLED",
+      "resolution": "2868×1320, 120Hz",
+      "chipset": "A19 Bionic",
+      "ram": "8 GB",
+      "os": "iOS 19",
+      "main_camera": "48 MP",
+      "ultrawide_camera": "12 MP",
+      "telephoto_camera": "12 MP (5×)",
+      "ip_rating": "IP68",
+      "dimensions": "160.9 × 77.6 × 8.3 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-17-pro-max.jpg"
   },
   {
     "id": "samsung_s25_ultra",
@@ -23,7 +36,20 @@
     "storage_gb": 256,
     "weight_g": 218,
     "charging_watts": 45,
-    "screen_ratio": 0.925
+    "screen_ratio": 0.925,
+    "tech_specs": {
+      "display": "6.9\" Dynamic AMOLED 2X",
+      "resolution": "3120×1440, 120Hz",
+      "chipset": "Snapdragon 8 Gen 4",
+      "ram": "12 GB",
+      "os": "One UI 7 (Android 15)",
+      "main_camera": "200 MP",
+      "ultrawide_camera": "12 MP",
+      "telephoto_camera": "50 MP (5×)",
+      "ip_rating": "IP68",
+      "dimensions": "162.3 × 79.0 × 8.6 mm"
+    },
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/%E7%AC%AC%E4%B8%80%E6%89%8B%EF%BC%81Samsung_Galaxy_S25%E7%B3%BB%E5%88%97%E6%8B%BF%E5%88%B0%E4%BA%86%EF%BC%9A5%E4%B8%AA%E5%8D%87%E7%BA%A7%EF%BC%81S_Pen%E4%B8%8D%E6%94%AF%E6%8C%81%E8%93%9D%E7%89%99%E4%BA%86%EF%BC%9F_%282160p_50fps_VP9-96kbit_AAC%29-00.00.07.100.png/500px-%E7%AC%AC%E4%B8%80%E6%89%8B%EF%BC%81Samsung_Galaxy_S25%E7%B3%BB%E5%88%97%E6%8B%BF%E5%88%B0%E4%BA%86%EF%BC%9A5%E4%B8%AA%E5%8D%87%E7%BA%A7%EF%BC%81S_Pen%E4%B8%8D%E6%94%AF%E6%8C%81%E8%93%9D%E7%89%99%E4%BA%86%EF%BC%9F_%282160p_50fps_VP9-96kbit_AAC%29-00.00.07.100.png"
   },
   {
     "id": "oppo_find_x9_pro",
@@ -36,7 +62,20 @@
     "storage_gb": 256,
     "weight_g": 224,
     "charging_watts": 80,
-    "screen_ratio": 0.911
+    "screen_ratio": 0.911,
+    "tech_specs": {
+      "display": "6.82\" LTPO AMOLED",
+      "resolution": "3168×1440, 120Hz",
+      "chipset": "Snapdragon 8 Gen 4",
+      "ram": "16 GB",
+      "os": "ColorOS 15 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "50 MP",
+      "telephoto_camera": "50 MP (3×)",
+      "ip_rating": "IP69",
+      "dimensions": "163.2 × 76.5 × 8.4 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/oppo-find-x9-pro.jpg"
   },
   {
     "id": "samsung_galaxy_z_fold_7",
@@ -49,7 +88,20 @@
     "storage_gb": 256,
     "weight_g": 215,
     "charging_watts": 25,
-    "screen_ratio": 0.904
+    "screen_ratio": 0.904,
+    "tech_specs": {
+      "display": "7.6\" Foldable Dynamic AMOLED 2X (Inner)",
+      "resolution": "2176×1812, 120Hz",
+      "chipset": "Snapdragon 8 Gen 4",
+      "ram": "12 GB",
+      "os": "One UI 7 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "12 MP",
+      "telephoto_camera": "10 MP (3×)",
+      "ip_rating": "IP48",
+      "dimensions": "154.9 × 129.9 × 6.5 mm (unfolded)"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-z-fold7.jpg"
   },
   {
     "id": "asus_rog_phone_9_pro",
@@ -62,7 +114,20 @@
     "storage_gb": 512,
     "weight_g": 227,
     "charging_watts": 65,
-    "screen_ratio": 0.882
+    "screen_ratio": 0.882,
+    "tech_specs": {
+      "display": "6.78\" AMOLED",
+      "resolution": "2448×1080, 165Hz",
+      "chipset": "Snapdragon 8 Gen 4",
+      "ram": "16 GB",
+      "os": "ROG UI (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "13 MP",
+      "telephoto_camera": "32 MP (3×)",
+      "ip_rating": "IP68",
+      "dimensions": "163.8 × 76.8 × 8.9 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/asus-rog-phone-9-pro.jpg"
   },
   {
     "id": "oneplus_13",
@@ -75,7 +140,20 @@
     "storage_gb": 256,
     "weight_g": 210,
     "charging_watts": 100,
-    "screen_ratio": 0.907
+    "screen_ratio": 0.907,
+    "tech_specs": {
+      "display": "6.82\" LTPO AMOLED",
+      "resolution": "3168×1440, 120Hz",
+      "chipset": "Snapdragon 8 Gen 4",
+      "ram": "12 GB",
+      "os": "OxygenOS 15 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "50 MP",
+      "telephoto_camera": "50 MP (3×)",
+      "ip_rating": "IP69",
+      "dimensions": "164.3 × 76.5 × 8.5 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/oneplus-13.jpg"
   },
   {
     "id": "xiaomi_15t",
@@ -88,7 +166,20 @@
     "storage_gb": 256,
     "weight_g": 194,
     "charging_watts": 67,
-    "screen_ratio": 0.900
+    "screen_ratio": 0.9,
+    "tech_specs": {
+      "display": "6.67\" AMOLED",
+      "resolution": "2712×1220, 144Hz",
+      "chipset": "MediaTek Dimensity 8300",
+      "ram": "8 GB",
+      "os": "HyperOS 2 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "8 MP",
+      "telephoto_camera": "2 MP (macro)",
+      "ip_rating": "IP64",
+      "dimensions": "162.2 × 75.7 × 8.5 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/xiaomi-15t.jpg"
   },
   {
     "id": "apple_iphone_16e",
@@ -101,7 +192,20 @@
     "storage_gb": 128,
     "weight_g": 167,
     "charging_watts": 20,
-    "screen_ratio": 0.862
+    "screen_ratio": 0.862,
+    "tech_specs": {
+      "display": "6.1\" Super Retina XDR OLED",
+      "resolution": "2532×1170, 60Hz",
+      "chipset": "A16 Bionic",
+      "ram": "6 GB",
+      "os": "iOS 19",
+      "main_camera": "48 MP",
+      "ultrawide_camera": "12 MP",
+      "telephoto_camera": "None",
+      "ip_rating": "IP68",
+      "dimensions": "146.7 × 71.5 × 7.8 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16e.jpg"
   },
   {
     "id": "samsung_galaxy_a56_5g",
@@ -114,7 +218,20 @@
     "storage_gb": 128,
     "weight_g": 198,
     "charging_watts": 45,
-    "screen_ratio": 0.877
+    "screen_ratio": 0.877,
+    "tech_specs": {
+      "display": "6.5\" Super AMOLED",
+      "resolution": "2340×1080, 120Hz",
+      "chipset": "Exynos 1580",
+      "ram": "8 GB",
+      "os": "One UI 7 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "12 MP",
+      "telephoto_camera": "None",
+      "ip_rating": "IP67",
+      "dimensions": "164.4 × 77.4 × 7.9 mm"
+    },
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Samsung_Galaxy_A56_5G_2025.jpg/500px-Samsung_Galaxy_A56_5G_2025.jpg"
   },
   {
     "id": "nothing_cmf_phone_2_pro",
@@ -127,6 +244,19 @@
     "storage_gb": 128,
     "weight_g": 185,
     "charging_watts": 33,
-    "screen_ratio": 0.867
+    "screen_ratio": 0.867,
+    "tech_specs": {
+      "display": "6.67\" OLED",
+      "resolution": "2400×1080, 120Hz",
+      "chipset": "MediaTek Dimensity 7200",
+      "ram": "8 GB",
+      "os": "Nothing OS 3 (Android 15)",
+      "main_camera": "50 MP",
+      "ultrawide_camera": "None",
+      "telephoto_camera": "None",
+      "ip_rating": "IP52",
+      "dimensions": "163.2 × 76.4 × 8.5 mm"
+    },
+    "image_url": "https://fdn2.gsmarena.com/vv/bigpic/nothing-cmf-phone-2-pro.jpg"
   }
 ]
