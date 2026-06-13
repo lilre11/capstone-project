@@ -11,18 +11,10 @@ interface Props {
 
 const MODEL_LABELS: Record<string, string> = {
   'openrouter/free': 'Auto (Free Router)',
-  'google/gemma-4-31b-it:free': 'Gemma 4 31B',
-  'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
-  'openai/gpt-oss-120b:free': 'GPT OSS 120B',
-  'qwen/qwen3-next-80b-a3b-instruct:free': 'Qwen3 Next 80B',
 };
 
 const EXPLAIN_MODELS = [
   { value: 'openrouter/free', label: 'Auto (Free Router)' },
-  { value: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B' },
-  { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B' },
-  { value: 'openai/gpt-oss-120b:free', label: 'GPT OSS 120B' },
-  { value: 'qwen/qwen3-next-80b-a3b-instruct:free', label: 'Qwen3 Next 80B' },
 ];
 
 export default function ExplainPage({ rankingData }: Props) {

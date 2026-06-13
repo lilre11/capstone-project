@@ -64,7 +64,6 @@ export default function ResultPage({ rankingData }: Props) {
   useEffect(() => {
     if (!top) return;
     const target = top.score;
-    const targetDash = circumference * (1 - target / 100);
     let current = 0;
     const step = target / 60;
     const timer = setInterval(() => {
@@ -201,7 +200,7 @@ export default function ResultPage({ rankingData }: Props) {
               <tbody>
                 {Object.entries(rankingData.weights_used).map(([k, w]) => (
                   <tr key={k}>
-                    <td>{CRITERIA_LABELS[k]?.label || k}</td>
+                    <td>{CRITERIA_LABELS[k] || k}</td>
                     <td>{w.toFixed(4)}</td>
                     <td>{rankingData.criteria_directions[k]}</td>
                     <td>{rankingData.ideal_best[k]?.toFixed(4)}</td>

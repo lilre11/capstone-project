@@ -27,6 +27,7 @@ _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 _FREE_MODELS = [
     "openrouter/free",
 ]
+SUPPORTED_EXPLAIN_MODELS = tuple(_FREE_MODELS)
 DEFAULT_EXPLAIN_MODEL = _FREE_MODELS[0]
 
 SYSTEM_PROMPT = """\

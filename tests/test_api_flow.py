@@ -128,7 +128,7 @@ def test_chat_endpoint_without_ranking_context(monkeypatch):
         assert ranking_data is None
         assert isinstance(phone_specs, list)
         assert len(phone_specs) == 10
-        assert model_id == "meta-llama/llama-3.3-70b-instruct:free"
+        assert model_id == "llama-3.3-70b-versatile"
         return "General answer"
 
     monkeypatch.setattr(chatbot, "answer_chat", fake_answer_chat)
@@ -139,14 +139,32 @@ def test_chat_endpoint_without_ranking_context(monkeypatch):
             json={
                 "question": "What kind of phone should I buy for battery life?",
                 "conversation_history": [],
-                "model": "meta-llama/llama-3.3-70b-instruct:free",
+                "model": "llama-3.3-70b-versatile",
             },
         )
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["answer"] == "General answer"
-    assert payload["model_used"] == "meta-llama/llama-3.3-70b-instruct:free"
+    assert payload["model_used"] == "llama-3.3-70b-versatile"
+
+
+def test_explain_endpoint_rejects_chat_only_model():
+    with TestClient(app) as client:
+        rank_response = client.post("/api/rank", json={})
+        assert rank_response.status_code == 200
+
+        response = client.post(
+            "/api/explain",
+            json={
+                "ranking_id": rank_response.json()["ranking_id"],
+                "question": "Explain the result",
+                "model": "llama-3.3-70b-versatile",
+                "conversation_history": [],
+            },
+        )
+
+    assert response.status_code == 400
 
 
 def test_chat_endpoint_unknown_ranking_id_returns_404():
