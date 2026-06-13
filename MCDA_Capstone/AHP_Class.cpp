@@ -17,7 +17,7 @@ void AHP_Class::ResetComparisons()
         1 means "equal importance".
 
         We initialize the full matrix with 1s.
-        This means if you do not set a comparison, it is treated as equal importance.
+        This means if we do not set a comparison, it is treated as equal importance.
     */
     comparisonMatrix_.setOnes();
 
@@ -312,7 +312,7 @@ double AHP_Class::GetRandomIndex(int n)
     /*
         Saaty's Random Index table.
 
-        For your project:
+        For our project:
         n = 8 criteria
         RI = 1.41
     */

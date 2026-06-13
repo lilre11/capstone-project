@@ -32,7 +32,7 @@ public:
 public:
     // Kept from your original design.
     // TOPSIS can read this array if you want.
-    float CriteriaWeights[CriteriaCount];
+    double CriteriaWeights[CriteriaCount];
 
 public:
     AHP_Class();
