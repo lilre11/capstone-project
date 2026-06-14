@@ -129,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AHP_Class.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="TOPSIS_Class.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
